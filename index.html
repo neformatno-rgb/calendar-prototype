@@ -511,6 +511,32 @@ body.no-now .now,body.no-now .now-label{display:none!important}
 .hz-ad{flex-direction:row;align-items:center;gap:8px;padding:0 10px}
 .hz-now{position:absolute;top:29px;bottom:0;width:2px;margin-left:-1px;background:var(--brand);z-index:2;pointer-events:none}
 .hz-now::before{content:"";position:absolute;top:-1px;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--brand)}
+
+.pick-btn{display:inline-flex;align-items:center;gap:4px;border:0;background:none;padding:2px 4px;margin:0 -4px;border-radius:6px;font:inherit;font-size:15px;color:var(--text);cursor:pointer}
+.pick-btn:hover,.pick-btn[aria-expanded="true"]{background:var(--generic)}
+.pick-btn .i{width:14px;height:14px;color:var(--text-2)}
+.pick-pop{position:fixed;z-index:200;background:var(--surface);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.06);animation:pop .12s ease-out}
+.dp{width:252px;padding:10px}
+.dp-head{display:flex;align-items:center;justify-content:space-between;padding:0 0 6px}
+.dp-head b{font-size:14px;font-weight:600}
+.dp-head button{width:28px;height:28px;border:0;background:none;border-radius:6px;display:grid;place-items:center;cursor:pointer;color:var(--text)}
+.dp-head button:hover{background:var(--generic)}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dp-wd{font-size:11px;color:var(--hint);text-align:center;padding:4px 0}
+.dp-d{height:30px;border:0;background:none;border-radius:6px;font:inherit;font-size:13px;color:var(--text);cursor:pointer}
+.dp-d:hover{background:var(--generic)}
+.dp-d.out{color:var(--hint)}
+.dp-d.today{color:var(--brand);font-weight:600}
+.dp-d.on{background:var(--brand);color:#fff}
+.dp-foot{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.dp-foot button{border:0;background:none;color:var(--brand);font:inherit;font-size:13px;padding:4px 6px;border-radius:6px;cursor:pointer}
+.dp-foot button:hover{background:var(--generic)}
+.tp{max-height:192px;overflow-y:auto;padding:0;overscroll-behavior:contain}
+.tp-o{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;height:32px;padding:0 12px;border:0;background:none;font:inherit;font-size:14px;color:var(--text);cursor:pointer;text-align:left}
+.tp-o small{color:var(--text-2);font-size:12px}
+.tp-o:hover,.tp-o:focus-visible{background:var(--generic);outline:0}
+.tp-o.on{background:var(--brand-soft);color:var(--brand);font-weight:500}
+@keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -601,8 +627,8 @@ body.no-now .now,body.no-now .now-label{display:none!important}
     <div class="row row-when">
       <svg class="i i20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.25"/><path d="M10 6v4l2.5 1.5"/></svg>
       <div class="when grow">
-        <label class="date-btn" for="evDate"><span id="evDateLabel"></span><input type="date" id="evDate" aria-label="Дата"></label>
-        <span id="timeWrap" class="tabnum"><select class="sel" id="evStart" aria-label="Начало"></select> — <select class="sel" id="evEnd" aria-label="Конец"></select></span>
+        <button type="button" class="date-btn pick-btn" data-act="dp-open" aria-haspopup="dialog" aria-expanded="false"><span id="evDateLabel"></span></button><input type="hidden" id="evDate">
+        <span id="timeWrap" class="tabnum"><button type="button" class="pick-btn tsel" data-act="tp-open" data-for="evStart" aria-haspopup="listbox" aria-expanded="false" aria-label="Начало"><span></span><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 6.5L8 10l3.5-3.5"/></svg></button><select id="evStart" hidden></select> — <button type="button" class="pick-btn tsel" data-act="tp-open" data-for="evEnd" aria-haspopup="listbox" aria-expanded="false" aria-label="Конец"><span></span><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 6.5L8 10l3.5-3.5"/></svg></button><select id="evEnd" hidden></select></span>
         <label class="check" for="evAllDay"><input type="checkbox" class="cb" id="evAllDay">Весь день</label>
       </div>
     </div>
@@ -813,6 +839,13 @@ function layoutHz(pos){
   const d=state.cursor; const startH=sameDay(d,TODAY)?Math.max(0,Math.floor(TODAY.getHours()+TODAY.getMinutes()/60-1)):8;
   sc.scrollLeft=startH*hpx;
 }
+viewEl.addEventListener('wheel',e=>{
+  const sc=e.target.closest('.hz-scroll'); if(!sc||e.ctrlKey) return;
+  if(Math.abs(e.deltaX)>Math.abs(e.deltaY)) return; // trackpad horizontal swipe — native
+  const k=e.deltaMode===1?40:e.deltaMode===2?sc.clientWidth:1;
+  e.preventDefault();
+  if(e.shiftKey) sc.scrollTop+=e.deltaY*k; else sc.scrollLeft+=e.deltaY*k;
+},{passive:false});
 addEventListener('resize',()=>{ if(viewEl.querySelector('.hz')){ const sc=viewEl.querySelector('.hz-scroll'); const old=parseFloat(getComputedStyle(viewEl.querySelector('.hz')).getPropertyValue('--hpx'))||1; const h=sc.scrollLeft/old; layoutHz([0,sc.scrollTop]); sc.scrollLeft=h*parseFloat(viewEl.querySelector('.hz').style.getPropertyValue('--hpx')); } });
 // overlap lanes
 function layout(list){
@@ -915,6 +948,7 @@ function syncModal(){
   const d=parseKey(draft.date);
   q('#evDateLabel').textContent=`${WD_L[dow(d)]}, ${d.getDate()} ${MONTHS_S[d.getMonth()]}`;
   q('#timeWrap').classList.toggle('hidden',draft.allDay);
+  modal.querySelectorAll('.tsel').forEach(b=>b.querySelector('span').textContent=q('#'+b.dataset.for).value);
   const c=colorOf(draft); q('#calDot').style.background=COLORS[draft.cal]; q('#colorChip').style.setProperty('--c',c);
   q('#swatches').querySelectorAll('[data-swatch]').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.swatch||null)===draft.color));
 }
@@ -931,6 +965,43 @@ function onModalInput(ev){
   modal.querySelector('#busyBox').innerHTML='';
   syncModal();
 }
+
+// ---------- custom date picker & time dropdown (desktop/tablet modal) ----------
+let pick=null;
+function closePick(){ if(!pick) return; pick.anchor?.setAttribute('aria-expanded','false'); pick.el.remove(); pick=null; }
+function placePick(el,anchor){ const r=anchor.getBoundingClientRect(); const w=el.offsetWidth,h=el.offsetHeight; let x=Math.min(r.left,innerWidth-w-8), y=r.bottom+6; if(y+h>innerHeight-8) y=Math.max(8,r.top-h-6); el.style.left=Math.max(8,x)+'px'; el.style.top=y+'px'; }
+function setModalField(id,val){ const i=modal.querySelector('#'+id); i.value=val; i.dispatchEvent(new Event('input',{bubbles:true})); }
+function openDatePick(anchor){
+  if(pick&&pick.anchor===anchor) return closePick(); closePick();
+  const el=document.createElement('div'); el.className='pick-pop dp'; el.setAttribute('role','dialog'); el.setAttribute('aria-label','Выбор даты');
+  document.body.appendChild(el); pick={el,anchor,month:(()=>{const d=parseKey(draft.date);return new Date(d.getFullYear(),d.getMonth(),1)})()};
+  anchor.setAttribute('aria-expanded','true');
+  const draw=()=>{ const m=pick.month, sel=parseKey(draft.date); const first=addDays(m,-dow(m));
+    el.innerHTML=`<div class="dp-head"><button type="button" data-dp="-1" aria-label="Предыдущий месяц"><svg class="i" viewBox="0 0 16 16"><path d="M10 4L6 8l4 4"/></svg></button><b>${MONTHS[m.getMonth()].replace(/^./,c=>c.toUpperCase())} ${m.getFullYear()}</b><button type="button" data-dp="1" aria-label="Следующий месяц"><svg class="i" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4"/></svg></button></div>
+    <div class="dp-grid">${['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(w=>`<span class="dp-wd">${w}</span>`).join('')}${[...Array(42)].map((_,i)=>{const d=addDays(first,i); return `<button type="button" class="dp-d${d.getMonth()!==m.getMonth()?' out':''}${sameDay(d,TODAY)?' today':''}${sameDay(d,sel)?' on':''}" data-day="${key(d)}" aria-label="${d.getDate()} ${MONTHS_G[d.getMonth()]}"${sameDay(d,sel)?' aria-current="date"':''}>${d.getDate()}</button>`}).join('')}</div>
+    <div class="dp-foot"><button type="button" data-day="${key(TODAY)}">Сегодня</button></div>`; };
+  draw(); placePick(el,anchor);
+  el.addEventListener('click',e=>{ e.stopPropagation(); const nav=e.target.closest('[data-dp]'); if(nav){ pick.month=new Date(pick.month.getFullYear(),pick.month.getMonth()+ +nav.dataset.dp,1); return draw(); }
+    const d=e.target.closest('[data-day]'); if(d){ setModalField('evDate',d.dataset.day); closePick(); anchor.focus(); } });
+  el.querySelector('.dp-d.on')?.focus();
+}
+function openTimePick(anchor){
+  if(pick&&pick.anchor===anchor) return closePick(); closePick();
+  const id=anchor.dataset.for, cur=modal.querySelector('#'+id).value, isEnd=id==='evEnd', st=toMin(draft.start||'00:00');
+  const opts=times.filter(t=>!isEnd||toMin(t)>st);
+  const dur=m=>{ const h=Math.floor(m/60), mm=m%60; return h&&mm?`${h} ч ${mm} мин`:h?`${h} ч`:`${mm} мин`; };
+  const el=document.createElement('div'); el.className='pick-pop tp'; el.setAttribute('role','listbox'); el.setAttribute('aria-label',isEnd?'Время окончания':'Время начала');
+  el.innerHTML=opts.map(t=>`<button type="button" role="option" class="tp-o${t===cur?' on':''}" aria-selected="${t===cur}" data-t="${t}"><span class="tabnum">${t}</span>${isEnd?`<small>${dur(toMin(t)-st)}</small>`:''}</button>`).join('');
+  document.body.appendChild(el); el.style.minWidth=Math.max(anchor.offsetWidth+24,isEnd?150:96)+'px'; pick={el,anchor};
+  anchor.setAttribute('aria-expanded','true'); placePick(el,anchor);
+  const on=el.querySelector('.tp-o.on')||el.querySelector('.tp-o'); el.scrollTop=Math.max(0,on.offsetTop-2*on.offsetHeight); on.focus({preventScroll:true});
+  el.addEventListener('click',e=>{ e.stopPropagation(); const o=e.target.closest('[data-t]'); if(!o) return; setModalField(id,o.dataset.t); closePick(); anchor.focus(); });
+  el.addEventListener('keydown',e=>{ const list=[...el.querySelectorAll('.tp-o')]; const i=list.indexOf(document.activeElement);
+    if(e.key==='ArrowDown'){ e.preventDefault(); list[Math.min(i+1,list.length-1)].focus(); } if(e.key==='ArrowUp'){ e.preventDefault(); list[Math.max(i-1,0)].focus(); } });
+}
+document.addEventListener('mousedown',e=>{ if(pick&&!e.target.closest('.pick-pop')&&!e.target.closest('[data-act="dp-open"],[data-act="tp-open"]')) closePick(); },true);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&pick){ e.stopImmediatePropagation(); const a=pick.anchor; closePick(); a?.focus(); } },true);
+addEventListener('resize',closePick);
 const autoGrow=t=>{t.style.height='auto';t.style.height=t.scrollHeight+'px'};
 function renderFiles(){ const q=s=>modal.querySelector(s); q('#filesList').innerHTML=draft.files.map(n=>`<span class="file-pill">${esc(n)}</span>`).join(''); q('#filesLabel').textContent=draft.files.length?'Добавить ещё файлы':'Прикрепите файлы'; q('#filesLabel').style.color=draft.files.length?'var(--text)':''; }
 const OFFS=[[5,'за 5 мин.'],[10,'за 10 мин.'],[15,'за 15 мин.'],[30,'за 30 мин.'],[60,'за 1 час'],[1440,'за 1 день']];
@@ -948,7 +1019,7 @@ function onSave(ev){
   state.cursor=d; state.sel=d; state.mini=new Date(d.getFullYear(),d.getMonth(),1); render(true);
   toast(isNew?'Событие создано':'Изменения сохранены');
 }
-function closeModal(){ if(modal){ modal.remove(); modal=null; draft=null; } }
+function closeModal(){ closePick(); if(modal){ modal.remove(); modal=null; draft=null; } }
 function busyCheck(){
   const d=parseKey(draft.date);
   const others=dayEvents(d).filter(e=>e.id!==draft.id);
@@ -1390,6 +1461,9 @@ document.addEventListener('click',ev=>{
   if(view&&!t.closest('[data-ev]')) closeView();
   if(modal&&modal.contains(t)){
     if(act&&act.startsWith('m2-')) return m2Click(t,act);
+    if(act==='dp-open') return openDatePick(t.closest('[data-act]'));
+    if(act==='tp-open') return openTimePick(t.closest('[data-act]'));
+    closePick();
     if(act==='close-bg'&&t===modal){ if(mode()==='mobile') return dismissSheet(modal,modal.querySelector('.sheet')); return closeModal(); }
     if(act==='close') return closeModal();
     if(act==='delete'){ events=events.filter(e=>e.id!==draft.id); save(); closeModal(); render(true); return toast('Событие удалено'); }
