@@ -74,6 +74,22 @@ svg.i20{width:20px;height:20px}
 .cb:checked{background:var(--brand);border-color:var(--brand)}
 .cb:checked::after{content:"";width:8px;height:4px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
 .dot{width:12px;height:12px;border-radius:50%;flex:none}
+.cal-name{flex:1;min-width:0;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-dot{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.cal-dot:hover{transform:scale(1.15);box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,rgba(0,0,0,.06))}
+.cal-kebab{width:20px;height:20px;display:grid;place-items:center;border-radius:4px;color:var(--text-2);opacity:0;transition:opacity .12s ease}
+.cal-item:hover .cal-kebab,.cal-kebab:focus-visible,.cal-kebab[aria-expanded="true"]{opacity:1}
+.cal-kebab:hover{background:rgba(0,0,0,.06);color:var(--text)}
+@media (hover:none){.cal-kebab{opacity:1}}
+.cal-pop{position:fixed;z-index:60;background:var(--surface);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04);animation:fade .12s ease-out;font-size:13px}
+.cal-pop h4{margin:0 0 8px;font-size:12px;font-weight:500;color:var(--text-2)}
+.cal-pop .sw{display:grid;grid-template-columns:repeat(4,24px);gap:8px}
+.cal-pop .sw button{width:24px;height:24px;border-radius:50%;background:var(--c)}
+.cal-pop .sw button[aria-pressed="true"]{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--c)}
+.cal-pop .mi{display:flex;width:100%;padding:7px 8px;border-radius:6px;text-align:left;font-size:14px}
+.cal-pop .mi:hover{background:var(--generic)}
+.cal-pop .sep2{height:1px;background:var(--line);margin:6px 0}
+
 .muted{color:var(--text-2)}
 
 /* top bar */
@@ -168,6 +184,9 @@ svg.i20{width:20px;height:20px}
 .row input.plain,.row textarea.plain{border:0;outline:0;width:100%;background:none;font-size:15px;color:var(--text);padding:4px 0;resize:none}
 .row input.plain::placeholder,.row textarea.plain::placeholder{color:var(--text-2)}
 .when{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--text)}
+.row-when{align-items:flex-start}
+.row-when>svg{margin-top:2px}
+.when{row-gap:6px}
 .date-btn{position:relative;padding:2px 0;color:var(--text)}
 .date-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
 .sel{appearance:none;border:0;background:none;outline:0;font-size:15px;color:var(--text);padding:2px 18px 2px 0;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 8l4 4 4-4' fill='none' stroke='%23262626' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center;background-size:16px}
@@ -252,6 +271,12 @@ svg.i20{width:20px;height:20px}
   .mm-day.today{color:var(--brand);font-weight:600}
   .mm-day.picked{background:var(--brand);color:#fff}
   .grab{width:32px;height:4px;border-radius:2px;background:var(--line-strong);margin:12px auto}
+  .mm-wrap{overflow:hidden;transition:height .28s ease}
+  .mm-wrap .mm-grid{transition:transform .28s ease;will-change:transform}
+  .grab-hit{padding:12px 0;touch-action:none;cursor:grab;user-select:none}
+  .grab-hit .grab{margin:0 auto}
+  .week-strip .grab-hit{padding:10px 0 2px}
+  .week-strip{padding-bottom:4px}
   .agenda{flex:1;min-height:0;overflow:auto;padding:0 16px 16px}
   .agenda-card{background:var(--generic);border-radius:16px;padding:4px 0}
   .agenda-day{font-size:13px;color:var(--text-2);margin:0 4px 8px}
@@ -264,8 +289,15 @@ svg.i20{width:20px;height:20px}
   .backdrop{align-items:flex-end;padding:0}
   .sheet{width:100%;border-radius:20px 20px 0 0;padding:8px 16px 24px;max-height:calc(100% - 40px);animation:up .22s ease-out}
   .handle{display:block}
+  .backdrop{transition:background-color .2s ease}
+  .sheet{overscroll-behavior:contain;animation:up .24s cubic-bezier(.2,.8,.2,1)}
+  .sheet .handle{position:relative}
+  .sheet .handle::after{content:"";position:absolute;left:-60px;right:-60px;top:-12px;bottom:-12px}
+  .sheet-grip{touch-action:none}
   .m-actions{top:20px;right:12px}
   .title-row input{font-size:20px}
+  .when .check{order:2}
+  .when #timeWrap{order:3;flex-basis:100%}
   .footer{flex-direction:column}
   .footer .btn{width:100%}
   .footer .spacer{display:none}
@@ -336,8 +368,8 @@ svg.i20{width:20px;height:20px}
     <label class="field" for="peopleInput"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="peopleInput" placeholder="Добавить людей" autocomplete="off"></label>
     <div class="cal-group">
       <h3>Мои календари</h3>
-      <label class="cal-item"><input type="checkbox" class="cb" id="cal-work" data-cal="work" checked><span class="dot" style="background:var(--work)"></span>Рабочий календарь</label>
-      <label class="cal-item"><input type="checkbox" class="cb" id="cal-personal" data-cal="personal" checked><span class="dot" style="background:var(--personal)"></span>Личный календарь</label>
+      <div class="cal-item"><input type="checkbox" class="cb" id="cal-work" data-cal="work" checked><button type="button" class="dot cal-dot" style="background:var(--work)" data-act="cal-color" data-cal="work" aria-label="Цвет календаря «Рабочий календарь»" title="Изменить цвет"></button><label for="cal-work" class="cal-name">Рабочий календарь</label><button type="button" class="cal-kebab" data-act="cal-menu" data-cal="work" aria-label="Действия с календарём «Рабочий календарь»" title="Ещё"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>
+      <div class="cal-item"><input type="checkbox" class="cb" id="cal-personal" data-cal="personal" checked><button type="button" class="dot cal-dot" style="background:var(--personal)" data-act="cal-color" data-cal="personal" aria-label="Цвет календаря «Личный календарь»" title="Изменить цвет"></button><label for="cal-personal" class="cal-name">Личный календарь</label><button type="button" class="cal-kebab" data-act="cal-menu" data-cal="personal" aria-label="Действия с календарём «Личный календарь»" title="Ещё"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>
     </div>
     <div class="cal-group">
       <h3>Общие календари</h3>
@@ -377,7 +409,6 @@ svg.i20{width:20px;height:20px}
     </div>
     <div class="m-header">
       <h1 id="mTitle"></h1>
-      <button class="icon-btn" data-act="today" aria-label="Сегодня"><svg class="i" viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2.5"/><path d="M3 8h14"/><circle cx="10" cy="12.5" r="1.2" fill="currentColor" stroke="none"/></svg></button>
       <button class="icon-btn" data-act="create" aria-label="Создать событие"><svg class="i" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg></button>
     </div>
     <div class="view" id="view"></div>
@@ -398,7 +429,7 @@ svg.i20{width:20px;height:20px}
       <svg class="i i20" viewBox="0 0 20 20" style="width:24px;height:24px;color:var(--text-2)"><circle cx="10" cy="10" r="7.25"/><path d="M7.5 12c.6.8 1.5 1.25 2.5 1.25s1.9-.45 2.5-1.25"/><circle cx="7.75" cy="8.25" r=".6" fill="currentColor"/><circle cx="12.25" cy="8.25" r=".6" fill="currentColor"/></svg>
       <input id="evTitle" placeholder="Придумайте название" autocomplete="off">
     </div>
-    <div class="row">
+    <div class="row row-when">
       <svg class="i i20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.25"/><path d="M10 6v4l2.5 1.5"/></svg>
       <div class="when grow">
         <label class="date-btn" for="evDate"><span id="evDateLabel"></span><input type="date" id="evDate" aria-label="Дата"></label>
@@ -459,6 +490,9 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 
 // ---------- data ----------
 const COLORS={work:'#5F99FF',personal:'#FFBE5C'};
+try{ Object.assign(COLORS, JSON.parse(localStorage.getItem('calendar-proto-colors'))||{}) }catch(e){}
+const applyCalColors=()=>{ for(const [k,v] of Object.entries(COLORS)) document.documentElement.style.setProperty('--'+k,v) };
+applyCalColors();
 const SWATCHES=['#5F99FF','#8F52CC','#30AA6E','#FFBE5C','#FF7A33','#E5343A','#FF1950','#7E8A99'];
 let uid=1; const mk=o=>({id:'e'+(uid++),allDay:false,repeat:'none',guests:'',place:'',link:'',desc:'',files:[],color:null,reminders:[{ch:'Почта',off:15}],...o});
 const SEED=[
@@ -592,13 +626,13 @@ function monthView(){
 function mobileMonth(){
   const c=state.cursor, days=monthDays(c), sel=state.sel;
   const list=dayEvents(sel);
-  return `<div class="mm-wd">${WD.map(w=>`<span>${w}</span>`).join('')}</div><div class="mm-grid">${days.map(d=>`<button class="mm-day tabnum${d.getMonth()!==c.getMonth()?' other':''}${sameDay(d,TODAY)?' today':''}${sameDay(d,sel)?' picked':''}" data-pick="${key(d)}"><i class="${dayEvents(d).length?'on':''}"></i>${d.getDate()}</button>`).join('')}</div>
-  <div class="grab"></div>
+  return `<div class="mm-wd">${WD.map(w=>`<span>${w}</span>`).join('')}</div><div class="mm-wrap" id="mmWrap"><div class="mm-grid" id="mmGrid">${days.map(d=>`<button class="mm-day tabnum${d.getMonth()!==c.getMonth()?' other':''}${sameDay(d,TODAY)?' today':''}${sameDay(d,sel)?' picked':''}" data-pick="${key(d)}"><i class="${dayEvents(d).length?'on':''}"></i>${d.getDate()}</button>`).join('')}</div></div>
+  <div class="grab-hit" id="grabCollapse" role="button" tabindex="0" aria-label="Свернуть месяц и открыть день"><div class="grab"></div></div>
   <div class="agenda"><div class="agenda-day">${WD_L[dow(sel)]}, ${sel.getDate()} ${MONTHS_G[sel.getMonth()]}</div><div class="agenda-card">${list.length?list.map(e=>`<button class="agenda-item${matches(e)?'':' dim'}" style="--c:${colorOf(e)}" data-ev="${e.id}" data-date="${key(sel)}"><span><span class="at">${esc(e.title)}</span><span class="as tabnum">${e.allDay?'Весь день':`${e.start}–${e.end}`}</span></span><span class="ad"></span></button>`).join(''):`<div class="empty">Событий нет. <button class="link-act" data-act="create" style="font-size:14px">Создать</button></div>`}</div></div>`;
 }
 function weekStrip(){
   const s=startOfWeek(state.cursor);
-  return `<div class="week-strip"><div class="mm-wd" style="padding:0">${WD.map(w=>`<span>${w}</span>`).join('')}</div><div class="ws-row">${[...Array(7)].map((_,i)=>{const d=addDays(s,i);return `<button class="mm-day tabnum${sameDay(d,TODAY)?' today':''}${sameDay(d,state.cursor)?' picked':''}" data-strip="${key(d)}"><i class="${dayEvents(d).length?'on':''}"></i>${d.getDate()}</button>`}).join('')}</div></div>`;
+  return `<div class="week-strip"><div class="mm-wd" style="padding:0">${WD.map(w=>`<span>${w}</span>`).join('')}</div><div class="ws-row">${[...Array(7)].map((_,i)=>{const d=addDays(s,i);return `<button class="mm-day tabnum${sameDay(d,TODAY)?' today':''}${sameDay(d,state.cursor)?' picked':''}" data-strip="${key(d)}"><i class="${dayEvents(d).length?'on':''}"></i>${d.getDate()}</button>`}).join('')}</div><div class="grab-hit" id="grabExpand" role="button" tabindex="0" aria-label="Развернуть месяц"><div class="grab"></div></div></div>`;
 }
 function renderMini(){
   const m=state.mini; $('#miniTitle').textContent=`${MONTHS[m.getMonth()]} ${m.getFullYear()}`;
@@ -774,7 +808,7 @@ function closeView(){ if(view){ view.remove(); view=null; } document.querySelect
 function refreshView(){ if(!view||!viewCtx) return; const e=events.find(x=>x.id===viewCtx.id); if(!e) return closeView(); const host=view.classList.contains('vpop')?view:view.querySelector('.sheet'); const keep=host.querySelector('.handle'); host.innerHTML=(keep?'<div class="handle"></div>':'')+viewHTML(e,viewCtx.dk); placeView(); }
 function handleViewClick(t,act){
   const e=events.find(x=>x.id===viewCtx.id);
-  if(act==='v-bg'&&t===view) return closeView();
+  if(act==='v-bg'&&t===view){ if(mode()==='mobile') return dismissSheet(view,view.querySelector('.sheet')); return closeView(); }
   if(act==='v-close') return closeView();
   if(act==='v-edit'){ const id=viewCtx.id; closeView(); return openModal({id}); }
   if(act==='v-delete'){
@@ -790,6 +824,115 @@ function setCollapsed(on){
   $('#app').classList.toggle('collapsed',on);
   const b=document.querySelector('.collapse-btn'); const l=on?'Показать боковое меню':'Скрыть боковое меню'; b.setAttribute('aria-label',l); b.title=l;
   try{ localStorage.setItem('calendar-proto-collapsed',on?'1':'0') }catch(e){}
+}
+
+// ---------- mobile month <-> day gesture ----------
+function mmMetrics(){
+  const w=$('#mmWrap'), g=$('#mmGrid'); if(!w||!g) return null;
+  const cell=g.querySelector('.mm-day'); const gap=parseFloat(getComputedStyle(g).rowGap)||0;
+  const rh=cell.offsetHeight+gap; const full=g.scrollHeight; const target=cell.offsetHeight;
+  const days=monthDays(state.cursor); const i=days.findIndex(d=>sameDay(d,state.sel)); const row=i<0?0:Math.floor(i/7);
+  return {w,g,rh,full,target,row};
+}
+function setCollapse(p,anim){
+  const m=mmMetrics(); if(!m) return;
+  if(!anim){ m.w.style.transition='none'; m.g.style.transition='none'; }
+  else { if(!m.w.style.height){ m.w.style.transition='none'; m.w.style.height=m.full+'px'; m.w.offsetHeight; } m.w.style.transition=''; m.g.style.transition=''; }
+  m.w.style.height=(m.full-(m.full-m.target)*p)+'px';
+  m.g.style.transform=`translateY(${-m.row*m.rh*p}px)`;
+}
+const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+function collapseToDay(){ setCollapse(1,true); setTimeout(()=>goto(state.sel,'day'),reduce()?0:290); }
+function expandToMonth(){
+  const d=new Date(state.cursor); state.sel=d; state.view='month'; state.cursor=new Date(d.getFullYear(),d.getMonth(),1); render();
+  if(reduce()) return;
+  setCollapse(1,false); requestAnimationFrame(()=>requestAnimationFrame(()=>{ setCollapse(0,true); setTimeout(()=>{ const w=$('#mmWrap'); if(w) w.style.height=''; },300); }));
+}
+let drag=null;
+document.addEventListener('pointerdown',e=>{
+  const h=e.target.closest('#grabCollapse,#grabExpand'); if(!h) return;
+  drag={id:h.id,y:e.clientY,p:0,moved:false,m:h.id==='grabCollapse'?mmMetrics():null};
+  h.setPointerCapture?.(e.pointerId);
+});
+document.addEventListener('pointermove',e=>{
+  if(!drag) return; const dy=e.clientY-drag.y; if(Math.abs(dy)>4) drag.moved=true;
+  if(drag.id==='grabCollapse'&&drag.m){ drag.p=Math.min(1,Math.max(0,-dy/(drag.m.full-drag.m.target))); setCollapse(drag.p,false); }
+  if(drag.id==='grabExpand') drag.p=Math.max(0,dy);
+});
+document.addEventListener('pointerup',()=>{
+  if(!drag) return; const d=drag; drag=null;
+  if(d.id==='grabCollapse'){
+    if(!d.moved||d.p>0.3) collapseToDay();
+    else { setCollapse(0,true); setTimeout(()=>{ const w=$('#mmWrap'); if(w) w.style.height=''; },300); }
+  } else if(!d.moved||d.p>30) expandToMonth();
+});
+document.addEventListener('pointercancel',()=>{ if(drag&&drag.id==='grabCollapse') setCollapse(0,true); drag=null; });
+document.addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ') return; if(e.target.id==='grabCollapse'){e.preventDefault();collapseToDay()} if(e.target.id==='grabExpand'){e.preventDefault();expandToMonth()} });
+
+// ---------- swipe-to-dismiss for mobile sheets ----------
+function dismissSheet(bd,sh){
+  const h=sh.offsetHeight;
+  sh.style.transition='transform .2s cubic-bezier(.3,.6,.4,1)'; sh.style.transform=`translateY(${h}px)`;
+  bd.style.transition='background-color .2s ease'; bd.style.backgroundColor='rgba(0,0,0,0)';
+  setTimeout(()=>{ if(modal===bd) closeModal(); else if(view===bd) closeView(); },190);
+}
+let sd=null;
+function sheetStart(target,y,pid){
+  if(mode()!=='mobile') return;
+  const sh=target.closest('.backdrop > .sheet'); if(!sh) return;
+  const grip=target.closest('.handle,.m-actions,.v-actions,.title-row,.v-head');
+  if(!grip && sh.scrollTop>0) return;
+  if(!grip && target.closest('input,textarea,select,button,a,label')) return;
+  sd={sh,bd:sh.parentElement,y0:y,y:y,t:performance.now(),v:0,active:false,pid};
+}
+function sheetMove(y,e){
+  if(!sd) return;
+  const dy=y-sd.y0;
+  if(!sd.active){ if(dy>4){ sd.active=true; sd.sh.style.transition='none'; sd.bd.style.transition='none'; } else if(dy<-4){ sd=null; return; } else return; }
+  if(e&&e.cancelable) e.preventDefault();
+  const now=performance.now(); sd.v=0.7*sd.v+0.3*((y-sd.y)/Math.max(1,now-sd.t)); sd.y=y; sd.t=now;
+  const d=dy>0?dy:dy/4; // light resistance upward
+  sd.sh.style.transform=`translateY(${d}px)`;
+  const k=Math.max(0,Math.min(1,dy/sd.sh.offsetHeight));
+  sd.bd.style.backgroundColor=`rgba(0,0,0,${(0.3*(1-k)).toFixed(3)})`;
+}
+function sheetEnd(){
+  if(!sd) return; const s=sd; sd=null; if(!s.active) return;
+  const dy=s.y-s.y0, h=s.sh.offsetHeight;
+  if(dy>h*0.22||(s.v>0.45&&dy>10)) return dismissSheet(s.bd,s.sh);
+  s.sh.style.transition='transform .28s cubic-bezier(.2,.9,.3,1.15)'; s.sh.style.transform='';
+  s.bd.style.transition='background-color .2s ease'; s.bd.style.backgroundColor='';
+}
+document.addEventListener('touchstart',e=>{ const t=e.touches[0]; sheetStart(e.target,t.clientY); },{passive:true});
+document.addEventListener('touchmove',e=>{ if(sd) sheetMove(e.touches[0].clientY,e); },{passive:false});
+document.addEventListener('touchend',sheetEnd); document.addEventListener('touchcancel',sheetEnd);
+document.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') sheetStart(e.target,e.clientY,e.pointerId); });
+document.addEventListener('pointermove',e=>{ if(e.pointerType==='mouse'&&sd) sheetMove(e.clientY,e); });
+document.addEventListener('pointerup',e=>{ if(e.pointerType==='mouse') sheetEnd(); });
+
+// ---------- calendar color / menu popover ----------
+let calPop=null;
+function closeCalPop(){ if(calPop){ calPop.remove(); calPop=null; document.querySelectorAll('.cal-kebab[aria-expanded]').forEach(b=>b.removeAttribute('aria-expanded')); } }
+function openCalPop(anchor,cal,kind){
+  closeCalPop(); const el=document.createElement('div'); el.className='cal-pop'; el.setAttribute('role','dialog');
+  const sw=`<div class="sw">${SWATCHES.map(c=>`<button type="button" style="--c:${c}" data-calset="${cal}" data-color="${c}" aria-label="Цвет ${c}" aria-pressed="${COLORS[cal].toLowerCase()===c.toLowerCase()}"></button>`).join('')}</div>`;
+  el.innerHTML= kind==='menu'
+    ? `<button class="mi" data-only="${cal}">Показать только этот</button><button class="mi" data-showall="1">Показать все</button><div class="sep2"></div><h4>Цвет календаря</h4>${sw}`
+    : `<h4>Цвет календаря</h4>${sw}`;
+  document.body.appendChild(el); calPop=el;
+  const r=anchor.getBoundingClientRect(); const w=el.offsetWidth, h=el.offsetHeight;
+  let x=kind==='menu'? r.right-w : r.left-8; let y=r.bottom+6;
+  if(x+w>innerWidth-8) x=innerWidth-8-w; if(x<8) x=8; if(y+h>innerHeight-8) y=r.top-6-h;
+  el.style.left=Math.round(x)+'px'; el.style.top=Math.round(y)+'px';
+  if(kind==='menu') anchor.setAttribute('aria-expanded','true');
+  el.querySelector('button').focus({preventScroll:true});
+}
+function calPopClick(t){
+  const c=t.closest('[data-calset]');
+  if(c){ COLORS[c.dataset.calset]=c.dataset.color; try{localStorage.setItem('calendar-proto-colors',JSON.stringify(COLORS))}catch(e){} applyCalColors(); closeCalPop(); render(true); return toast('Цвет календаря изменён'); }
+  const only=t.closest('[data-only]');
+  if(only){ document.querySelectorAll('[data-cal].cb').forEach(cb=>{ cb.checked=cb.dataset.cal===only.dataset.only; cb.checked?state.hidden.delete(cb.dataset.cal):state.hidden.add(cb.dataset.cal); }); closeCalPop(); return render(true); }
+  if(t.closest('[data-showall]')){ document.querySelectorAll('[data-cal].cb').forEach(cb=>{cb.checked=true}); state.hidden.clear(); closeCalPop(); return render(true); }
 }
 // ---------- misc ----------
 let toastT; function toast(msg){ document.querySelector('.toast')?.remove(); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; t.setAttribute('role','status'); document.body.appendChild(t); clearTimeout(toastT); toastT=setTimeout(()=>t.remove(),2200); }
@@ -811,10 +954,13 @@ function closePopovers(except){ ['#viewMenu','#bellPop'].forEach(s=>{ if(s!==exc
 document.addEventListener('click',ev=>{
   const t=ev.target;
   const act=t.closest('[data-act]')?.dataset.act;
+  if(calPop&&calPop.contains(t)) return calPopClick(t);
+  if(act==='cal-color'||act==='cal-menu'){ const b=t.closest('[data-act]'); if(calPop&&calPop.dataset.for===b.dataset.cal+act){ return closeCalPop(); } openCalPop(b,b.dataset.cal,act==='cal-menu'?'menu':'color'); calPop.dataset.for=b.dataset.cal+act; return; }
+  if(calPop) closeCalPop();
   if(view&&view.contains(t)) return handleViewClick(t,act);
   if(view&&!t.closest('[data-ev]')) closeView();
   if(modal&&modal.contains(t)){
-    if(act==='close-bg'&&t===modal) return closeModal();
+    if(act==='close-bg'&&t===modal){ if(mode()==='mobile') return dismissSheet(modal,modal.querySelector('.sheet')); return closeModal(); }
     if(act==='close') return closeModal();
     if(act==='delete'){ events=events.filter(e=>e.id!==draft.id); save(); closeModal(); render(true); return toast('Событие удалено'); }
     if(act==='make-link'){ const code=Math.random().toString(36).slice(2,5)+'-'+Math.random().toString(36).slice(2,6); draft.link=`https://telemost.example/${code}`; modal.querySelector('#evLink').value=draft.link; return; }
@@ -847,12 +993,12 @@ document.addEventListener('click',ev=>{
   if(col){ const r=col.getBoundingClientRect(); const min=Math.floor((ev.clientY-r.top)/0.8/30)*30; return openModal({date:col.dataset.col,start:Math.min(min,23*60)}); }
 });
 document.addEventListener('keydown',ev=>{
-  if(ev.key==='Escape'){ if(modal) closeModal(); else if(view) closeView(); else { closePopovers(); toggleSidebar(false); } }
+  if(ev.key==='Escape'){ if(calPop) closeCalPop(); else if(modal) closeModal(); else if(view) closeView(); else { closePopovers(); toggleSidebar(false); } }
   if(ev.key==='Enter'&&ev.target.dataset?.cell){ goto(parseKey(ev.target.dataset.cell),'day'); }
 });
 $('#menuBtn').addEventListener('click',ev=>{ev.stopPropagation();toggleSidebar(true)});
 $('#search').addEventListener('input',e=>{state.q=e.target.value.trim().toLowerCase(); render(true)});
-document.querySelectorAll('[data-cal]').forEach(cb=>cb.addEventListener('change',()=>{ cb.checked?state.hidden.delete(cb.dataset.cal):state.hidden.add(cb.dataset.cal); render(true); }));
+document.querySelectorAll('input[data-cal]').forEach(cb=>cb.addEventListener('change',()=>{ cb.checked?state.hidden.delete(cb.dataset.cal):state.hidden.add(cb.dataset.cal); render(true); }));
 $('#peopleInput').addEventListener('keydown',e=>{
   if(e.key!=='Enter'||!e.target.value.trim()) return;
   state.shared.push(e.target.value.trim()); e.target.value='';
