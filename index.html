@@ -537,6 +537,9 @@ body.no-now .now,body.no-now .now-label{display:none!important}
 .tp-o:hover,.tp-o:focus-visible{background:var(--generic);outline:0}
 .tp-o.on{background:var(--brand-soft);color:var(--brand);font-weight:500}
 @keyframes pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.sel-btn{font-size:15px}
+.sp .tp-o{gap:16px}
+.sp .tp-o .i{width:14px;height:14px;color:var(--brand);flex:none}
 </style>
 </head>
 <body>
@@ -949,6 +952,7 @@ function syncModal(){
   q('#evDateLabel').textContent=`${WD_L[dow(d)]}, ${d.getDate()} ${MONTHS_S[d.getMonth()]}`;
   q('#timeWrap').classList.toggle('hidden',draft.allDay);
   modal.querySelectorAll('.tsel').forEach(b=>b.querySelector('span').textContent=q('#'+b.dataset.for).value);
+  enhanceSelects(modal);
   const c=colorOf(draft); q('#calDot').style.background=COLORS[draft.cal]; q('#colorChip').style.setProperty('--c',c);
   q('#swatches').querySelectorAll('[data-swatch]').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.swatch||null)===draft.color));
 }
@@ -999,14 +1003,38 @@ function openTimePick(anchor){
   el.addEventListener('keydown',e=>{ const list=[...el.querySelectorAll('.tp-o')]; const i=list.indexOf(document.activeElement);
     if(e.key==='ArrowDown'){ e.preventDefault(); list[Math.min(i+1,list.length-1)].focus(); } if(e.key==='ArrowUp'){ e.preventDefault(); list[Math.max(i-1,0)].focus(); } });
 }
-document.addEventListener('mousedown',e=>{ if(pick&&!e.target.closest('.pick-pop')&&!e.target.closest('[data-act="dp-open"],[data-act="tp-open"]')) closePick(); },true);
+document.addEventListener('mousedown',e=>{ if(pick&&!e.target.closest('.pick-pop')&&!e.target.closest('[data-act="dp-open"],[data-act="tp-open"],[data-act="sp-open"]')) closePick(); },true);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&pick){ e.stopImmediatePropagation(); const a=pick.anchor; closePick(); a?.focus(); } },true);
 addEventListener('resize',closePick);
+
+// generic non-native dropdown for <select class="sel"> inside the modal
+const SEL_CH='<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 6.5L8 10l3.5-3.5"/></svg>';
+function enhanceSelects(root){
+  root.querySelectorAll('select.sel').forEach(sel=>{
+    let b=sel.nextElementSibling&&sel.nextElementSibling._sel===sel?sel.nextElementSibling:null;
+    if(!b){ sel.hidden=true; b=document.createElement('button'); b.type='button'; b.className='pick-btn sel-btn'; b.dataset.act='sp-open';
+      b.setAttribute('aria-haspopup','listbox'); b.setAttribute('aria-expanded','false'); b.setAttribute('aria-label',sel.getAttribute('aria-label')||'');
+      b.innerHTML='<span></span>'+SEL_CH; b._sel=sel; sel.after(b); }
+    const o=sel.options[sel.selectedIndex]; b.querySelector('span').textContent=o?o.text:'';
+  });
+}
+function openSelPick(anchor){
+  if(pick&&pick.anchor===anchor) return closePick(); closePick();
+  const sel=anchor._sel; const el=document.createElement('div'); el.className='pick-pop tp sp'; el.setAttribute('role','listbox'); el.setAttribute('aria-label',sel.getAttribute('aria-label')||'');
+  el.innerHTML=[...sel.options].map(o=>`<button type="button" role="option" class="tp-o${o.selected?' on':''}" aria-selected="${o.selected}" data-v="${esc(o.value)}"><span>${esc(o.text)}</span>${o.selected?'<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 8.2l3 3 6-6.4"/></svg>':''}</button>`).join('');
+  document.body.appendChild(el); el.style.minWidth=Math.max(anchor.offsetWidth+24,140)+'px'; pick={el,anchor};
+  anchor.setAttribute('aria-expanded','true'); placePick(el,anchor);
+  const on=el.querySelector('.tp-o.on')||el.querySelector('.tp-o'); if(el.scrollHeight>el.clientHeight) el.scrollTop=Math.max(0,on.offsetTop-2*on.offsetHeight); on.focus({preventScroll:true});
+  el.addEventListener('click',e=>{ e.stopPropagation(); const o=e.target.closest('[data-v]'); if(!o) return; sel.value=o.dataset.v; sel.dispatchEvent(new Event('change',{bubbles:true})); closePick(); enhanceSelects(modal); anchor.isConnected?anchor.focus():null; });
+  el.addEventListener('keydown',e=>{ const list=[...el.querySelectorAll('.tp-o')]; const i=list.indexOf(document.activeElement);
+    if(e.key==='ArrowDown'){ e.preventDefault(); list[Math.min(i+1,list.length-1)].focus(); } if(e.key==='ArrowUp'){ e.preventDefault(); list[Math.max(i-1,0)].focus(); } });
+}
 const autoGrow=t=>{t.style.height='auto';t.style.height=t.scrollHeight+'px'};
 function renderFiles(){ const q=s=>modal.querySelector(s); q('#filesList').innerHTML=draft.files.map(n=>`<span class="file-pill">${esc(n)}</span>`).join(''); q('#filesLabel').textContent=draft.files.length?'Добавить ещё файлы':'Прикрепите файлы'; q('#filesLabel').style.color=draft.files.length?'var(--text)':''; }
 const OFFS=[[5,'за 5 мин.'],[10,'за 10 мин.'],[15,'за 15 мин.'],[30,'за 30 мин.'],[60,'за 1 час'],[1440,'за 1 день']];
 function renderReminders(){
-  modal.querySelector('#reminders').innerHTML=draft.reminders.map((r,i)=>`<div class="row" data-rem="${i}"><svg class="i i20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.25"/><path d="M7 10.2l2 2 4-4.2"/></svg><select class="sel" data-f="ch" aria-label="Канал">${['Почта','Пуш','SMS'].map(c=>`<option${c===r.ch?' selected':''}>${c}</option>`).join('')}</select><span style="flex:1"></span><select class="sel" data-f="off" aria-label="Когда">${OFFS.map(([v,l])=>`<option value="${v}"${v===r.off?' selected':''}>${l}</option>`).join('')}</select><button type="button" class="rm-x" data-act="rm-reminder" data-i="${i}" aria-label="Удалить напоминание"><svg class="i" viewBox="0 0 20 20"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button></div>`).join('');
+  modal.querySelector('#reminders').innerHTML=draft.reminders.map((r,i)=>`<div class="row" data-rem="${i}"><svg class="i i20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.25"/><path d="M7 10.2l2 2 4-4.2"/></svg><select class="sel" data-f="ch" aria-label="Канал">${['Почта','Пуш','SMS'].map(c=>`<option${c===r.ch?' selected':''}>${c}</option>`).join('')}</select><span style="flex:1"></span><select class="sel" data-f="off" aria-label="Когда">${OFFS.map(([v,l])=>`<option value="${v}"${v===r.off?' selected':''}>${l}</option>`).join('')}</select></div>`).join('');
+  enhanceSelects(modal);
 }
 function readReminders(){ draft.reminders=[...modal.querySelectorAll('[data-rem]')].map(r=>({ch:r.querySelector('[data-f=ch]').value,off:+r.querySelector('[data-f=off]').value})); }
 function onSave(ev){
@@ -1463,6 +1491,7 @@ document.addEventListener('click',ev=>{
     if(act&&act.startsWith('m2-')) return m2Click(t,act);
     if(act==='dp-open') return openDatePick(t.closest('[data-act]'));
     if(act==='tp-open') return openTimePick(t.closest('[data-act]'));
+    if(act==='sp-open') return openSelPick(t.closest('[data-act]'));
     closePick();
     if(act==='close-bg'&&t===modal){ if(mode()==='mobile') return dismissSheet(modal,modal.querySelector('.sheet')); return closeModal(); }
     if(act==='close') return closeModal();
