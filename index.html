@@ -481,9 +481,36 @@ body.no-now .now,body.no-now .now-label{display:none!important}
 .m2-chip span{width:18px;height:18px;border-radius:50%}
 .m2-chip.on{box-shadow:inset 0 0 0 1px var(--brand)}
 .m2-foot{position:sticky;bottom:0;margin:auto -16px 0;padding:8px 16px calc(12px + env(safe-area-inset-bottom));background:var(--surface);display:flex;flex-direction:column;gap:4px;z-index:2}
-.m2-submit{height:36px;border:0;border-radius:8px;background:var(--brand);color:#fff;font:inherit;font-size:13px;cursor:pointer}
+.m2-submit{height:44px;border:0;border-radius:10px;background:var(--brand);color:#fff;font:inherit;font-size:15px;cursor:pointer}
 .m2-submit:active{background:var(--brand-hover)}
-.m2-delete{height:36px;border:0;border-radius:8px;background:none;color:var(--danger,#E5343A);font:inherit;font-size:13px;cursor:pointer}
+.m2-delete{height:44px;border:0;border-radius:8px;background:none;color:var(--danger,#E5343A);font:inherit;font-size:13px;cursor:pointer}
+
+.seg{display:inline-flex;height:28px;border-radius:6px}
+.seg button{width:38px;height:28px;display:grid;place-items:center;border:1px solid var(--line-strong);background:var(--surface);color:var(--text-2);cursor:pointer;margin-left:-1px;position:relative}
+.seg button:first-child{border-radius:6px 0 0 6px;margin-left:0}
+.seg button:last-child{border-radius:0 6px 6px 0}
+.seg button:hover{background:var(--generic)}
+.seg button[aria-checked="true"]{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);z-index:1}
+.hz{flex:1;min-height:0;display:flex;flex-direction:column;--hpx:200px}
+.hz-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+.hz-inner{position:relative;width:calc(168px + var(--hpx)*24);min-height:100%;display:flex;flex-direction:column}
+.hz-head{position:sticky;top:0;z-index:4;display:flex;height:33px;background:var(--surface);border-bottom:1px solid var(--line);flex:none}
+.hz-corner{position:sticky;left:0;z-index:5;width:168px;flex:none;background:var(--surface);border-right:1px solid var(--line);font-size:10px;color:var(--hint);padding:11px 8px}
+.hz-hours{position:relative;flex:1}
+.hz-hours span{position:absolute;top:10px;font-size:11px;color:var(--hint);padding-left:6px;white-space:nowrap}
+.hz-hours span.half{opacity:.6}
+.hz-row{display:flex;border-bottom:1px solid var(--line);flex:none}
+.hz-fill{flex:1;border-bottom:0;min-height:40px}
+.hz-lab{position:sticky;left:0;z-index:3;width:168px;flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;align-items:flex-start;gap:8px;padding:14px 8px 14px 12px;white-space:nowrap;overflow:hidden;font-size:13px;font-weight:500;color:var(--text)}
+.hz-lab i{width:10px;height:10px;border-radius:50%;flex:none;margin-top:4px}
+.hz-lane{position:relative;flex:1;cursor:cell;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px),linear-gradient(to right,rgba(0,0,0,.05) 1px,transparent 1px);background-size:var(--hpx) 100%,calc(var(--hpx)/2) 100%}
+.hz-scroll::-webkit-scrollbar{height:8px;width:8px}.hz-scroll::-webkit-scrollbar-thumb{background:rgba(0,0,0,.18);border-radius:4px;border:2px solid var(--surface)}.hz-scroll::-webkit-scrollbar-track{background:transparent}
+.hz-ev{position:absolute;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:13px}
+.hz-ev .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hz-ev .s{color:var(--text-2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hz-ad{flex-direction:row;align-items:center;gap:8px;padding:0 10px}
+.hz-now{position:absolute;top:29px;bottom:0;width:2px;margin-left:-1px;background:var(--brand);z-index:2;pointer-events:none}
+.hz-now::before{content:"";position:absolute;top:-1px;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--brand)}
 </style>
 </head>
 <body>
@@ -535,6 +562,7 @@ body.no-now .now,body.no-now .now-label{display:none!important}
         <button class="icon-btn" data-act="next" aria-label="Вперёд"><svg class="i" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button>
       </div>
       <div class="tools">
+        <div class="seg hidden" id="orientSeg" role="radiogroup" aria-label="Вид шкалы"><button type="button" role="radio" data-act="orient" data-o="v" aria-checked="true" title="Вертикальная шкала" aria-label="Вертикальная шкала"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.75 2C2.33579 2 2 2.33579 2 2.75C2 3.16421 2.33579 3.5 2.75 3.5L13.25 3.5C13.6642 3.5 14 3.16421 14 2.75C14 2.33579 13.6642 2 13.25 2L2.75 2ZM2.75 9C2.33579 9 2 9.33579 2 9.75C2 10.1642 2.33579 10.5 2.75 10.5L13.25 10.5C13.6642 10.5 14 10.1642 14 9.75C14 9.33579 13.6642 9 13.25 9L2.75 9ZM2.75 12.5C2.33579 12.5 2 12.8358 2 13.25C2 13.6642 2.33579 14 2.75 14L9.25 14C9.66421 14 10 13.6642 10 13.25C10 12.8358 9.66421 12.5 9.25 12.5L2.75 12.5ZM2 6.25C2 5.83579 2.33579 5.5 2.75 5.5L9.25 5.5C9.66421 5.5 10 5.83579 10 6.25C10 6.66421 9.66421 7 9.25 7L2.75 7C2.33579 7 2 6.66421 2 6.25Z" fill="currentColor"/></svg></button><button type="button" role="radio" data-act="orient" data-o="h" aria-checked="false" title="Горизонтальная шкала" aria-label="Горизонтальная шкала"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.75 2C2.33579 2 2 2.33579 2 2.75C2 3.16421 2.33579 3.5 2.75 3.5L13.25 3.5C13.6642 3.5 14 3.16421 14 2.75C14 2.33579 13.6642 2 13.25 2L2.75 2ZM6 6.25C6 5.83579 6.33579 5.5 6.75 5.5L13.25 5.5C13.6642 5.5 14 5.83579 14 6.25C14 6.66421 13.6642 7 13.25 7L6.75 7C6.33579 7 6 6.66421 6 6.25ZM2.75 9C2.33579 9 2 9.33579 2 9.75C2 10.1642 2.33579 10.5 2.75 10.5L13.25 10.5C13.6642 10.5 14 10.1642 14 9.75C14 9.33579 13.6642 9 13.25 9L2.75 9ZM6.75 12.5C6.33579 12.5 6 12.8358 6 13.25C6 13.6642 6.33579 14 6.75 14L13.25 14C13.6642 14 14 13.6642 14 13.25C14 12.8358 13.6642 12.5 13.25 12.5L6.75 12.5Z" fill="currentColor"/></svg></button></div>
         <button class="btn btn-outline" data-act="today">Сегодня</button>
         <button class="btn btn-outline" id="viewBtn" data-act="view-menu" aria-haspopup="menu"><span id="viewLabel">Неделя</span><svg class="i" viewBox="0 0 16 16"><path d="M4.5 6.5L8 10l3.5-3.5"/></svg></button>
         <div class="menu hidden" id="viewMenu" role="menu" style="right:0;top:34px">
@@ -599,10 +627,9 @@ body.no-now .now,body.no-now .now-label{display:none!important}
     <div class="section-t">Уведомления</div>
     <div id="reminders"></div>
     <div class="row"><svg class="i i20" viewBox="0 0 20 20"><path d="M10 4.5v11M4.5 10h11"/></svg><button type="button" data-act="add-reminder" style="color:var(--text-2);font-size:15px">Добавить напоминание</button></div>
-    <div id="busyBox"></div>
+    <div id="busyBox" hidden></div>
     <div class="footer">
-      <button type="submit" class="btn btn-brand btn-l">Сохранить</button>
-      <button type="button" class="btn btn-normal btn-l" data-act="busy">Занятость участников</button>
+      <button type="submit" class="btn btn-brand btn-l" style="flex:1;width:100%">Сохранить</button>
     </div>
     <div class="hint-line hidden" id="seriesHint">Изменения применятся ко всей серии повторов.</div>
   </form>
@@ -673,7 +700,7 @@ if(!Array.isArray(events)) events=SEED;
 uid=events.reduce((m,e)=>Math.max(m,+String(e.id).slice(1)||0),0)+1;
 const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(events))}catch(e){}};
 
-const state={mmExp:false,view:'week',cursor:new Date(TODAY),sel:new Date(TODAY),mini:new Date(TODAY.getFullYear(),TODAY.getMonth(),1),hidden:new Set(),q:'',shared:[]};
+const state={orient:(()=>{try{return localStorage.getItem('calendar-proto-orient')||'v'}catch(e){return 'v'}})(),mmExp:false,view:'week',cursor:new Date(TODAY),sel:new Date(TODAY),mini:new Date(TODAY.getFullYear(),TODAY.getMonth(),1),hidden:new Set(),q:'',shared:[]};
 const colorOf=e=>e.color||COLORS[e.cal];
 
 // occurrences of events for one day
@@ -707,7 +734,7 @@ const viewEl=$('#view');
 function render(keepScroll){
   normView();
   if(typeof closeView==='function'&&view&&!view.querySelector('.st-sheet')) closeView();
-  const prevScroll=viewEl.querySelector('.tl-scroll')?.scrollTop;
+  const prevScroll=viewEl.querySelector('.tl-scroll')?.scrollTop; const prevHz=viewEl.querySelector('.hz-scroll'); const prevHzPos=prevHz?[prevHz.scrollLeft,prevHz.scrollTop]:null;
   const c=state.cursor;
   // titles
   let t;
@@ -724,7 +751,11 @@ function render(keepScroll){
   if(state.view==='month') viewEl.innerHTML= mode()==='mobile'?mobileMonth():monthView();
   else if(state.view==='week') viewEl.innerHTML=timeline([...Array(7)].map((_,i)=>addDays(startOfWeek(c),i)));
   else if(state.view==='three'){ const ds=[0,1,2].map(i=>addDays(c,i)); viewEl.innerHTML= mode()==='mobile'? mDays(ds)+`<div class="m-sheet">${timeline(ds)}</div>` : timeline(ds); }
+  else if(mode()==='desktop'&&state.orient==='h') viewEl.innerHTML=hTimeline(new Date(c));
   else viewEl.innerHTML= mode()==='mobile'? weekStrip()+`<div class="m-sheet">${timeline([new Date(c)])}</div>` : timeline([new Date(c)]);
+  const showSeg=state.view==='day'&&mode()==='desktop'; $('#orientSeg').classList.toggle('hidden',!showSeg);
+  $('#orientSeg').querySelectorAll('[data-o]').forEach(b=>b.setAttribute('aria-checked',b.dataset.o===state.orient));
+  if(viewEl.querySelector('.hz')) layoutHz(keepScroll?prevHzPos:null);
   viewEl.classList.toggle('mm-exp',state.view==='month'&&mode()==='mobile'&&state.mmExp);
   if(viewEl.classList.contains('mm-exp')) $('#mmWrap')?.classList.add('exp');
   const sc=viewEl.querySelector('.tl-scroll');
@@ -750,6 +781,39 @@ function timeline(days){
   }).join('');
   return `<div class="tl n${n}">${head}${allday}<div class="tl-scroll"><div class="tl-row tl-grid" style="--n:${n}"><div class="tl-hours">${hours}</div>${cols}</div></div></div>`;
 }
+
+// ---------- horizontal day timeline (desktop only) ----------
+const HZ_LEFT=168, HZ_EV=120, HZ_GAP=6, HZ_AD=28;
+function hTimeline(d){
+  const dk=key(d), list=dayEvents(d);
+  const cals=CALS.filter(c=>!state.hidden.has(c.id));
+  const hrs=[...Array(24)].map((_,h)=>`<span style="left:calc(var(--hpx)*${h})">${pad(h)}:00</span><span class="half" style="left:calc(var(--hpx)*${h+.5})">${pad(h)}:30</span>`).join('');
+  const rows=cals.map(c=>{
+    const mine=list.filter(e=>e.cal===c.id), ad=mine.filter(e=>e.allDay), timed=layout(mine.filter(e=>!e.allDay));
+    const lanes=Math.max(1,...timed.map(x=>x.lanes)), adH=ad.length?HZ_AD+HZ_GAP:0;
+    const h=HZ_GAP*2+adH+lanes*HZ_EV+(lanes-1)*HZ_GAP;
+    const adHTML=ad.map((e,i)=>`<button class="ev hz-ev hz-ad${matches(e)?'':' dim'}" style="--c:${colorOf(e)};top:${HZ_GAP}px;left:2px;right:2px;height:${HZ_AD}px" data-ev="${e.id}" data-date="${dk}"><span class="t">${esc(e.title)}</span><span class="s">весь день</span></button>`).join('');
+    const evHTML=timed.map(({e,lane})=>{ const s=toMin(e.start), en=Math.max(toMin(e.end),s+15);
+      return `<button class="ev hz-ev${matches(e)?'':' dim'}" style="--c:${colorOf(e)};left:calc(var(--hpx)*${s/60} + 2px);width:calc(var(--hpx)*${(en-s)/60} - 4px);top:${HZ_GAP+adH+lane*(HZ_EV+HZ_GAP)}px;height:${HZ_EV}px" data-ev="${e.id}" data-date="${dk}"><span class="t">${esc(e.title)}</span><span class="s tabnum">${e.start} – ${e.end}</span></button>`; }).join('');
+    return `<div class="hz-row" style="height:${h}px"><div class="hz-lab"><i style="background:${COLORS[c.id]}"></i>${esc(calFull(c.id))}</div><div class="hz-lane" data-hlane="${dk}" data-cal="${c.id}">${adHTML}${evHTML}</div></div>`;
+  }).join('');
+  const now=sameDay(d,TODAY)?`<div class="hz-now" style="left:calc(${HZ_LEFT}px + var(--hpx)*${(TODAY.getHours()*60+TODAY.getMinutes())/60})"></div>`:'';
+  return `<div class="hz"><div class="hz-scroll"><div class="hz-inner">
+    <div class="hz-head"><div class="hz-corner">${TZ.replace('UTC','GMT')}</div><div class="hz-hours">${hrs}</div></div>
+    ${rows||'<div class="hz-row hz-empty"><div class="hz-lab">Нет видимых календарей</div><div class="hz-lane"></div></div>'}
+    <div class="hz-row hz-fill"><div class="hz-lab"></div><div class="hz-lane" data-hlane="${dk}"></div></div>
+    ${now}
+  </div></div></div>`;
+}
+function layoutHz(pos){
+  const sc=viewEl.querySelector('.hz-scroll'); if(!sc) return;
+  const hpx=Math.max(60,(sc.clientWidth-HZ_LEFT)/4);
+  viewEl.querySelector('.hz').style.setProperty('--hpx',hpx+'px');
+  if(pos){ sc.scrollLeft=pos[0]; sc.scrollTop=pos[1]; return; }
+  const d=state.cursor; const startH=sameDay(d,TODAY)?Math.max(0,Math.floor(TODAY.getHours()+TODAY.getMinutes()/60-1)):8;
+  sc.scrollLeft=startH*hpx;
+}
+addEventListener('resize',()=>{ if(viewEl.querySelector('.hz')){ const sc=viewEl.querySelector('.hz-scroll'); const old=parseFloat(getComputedStyle(viewEl.querySelector('.hz')).getPropertyValue('--hpx'))||1; const h=sc.scrollLeft/old; layoutHz([0,sc.scrollTop]); sc.scrollLeft=h*parseFloat(viewEl.querySelector('.hz').style.getPropertyValue('--hpx')); } });
 // overlap lanes
 function layout(list){
   const items=list.map(e=>({e,s:toMin(e.start),en:Math.max(toMin(e.end),toMin(e.start)+15)})).sort((a,b)=>a.s-b.s||b.en-a.en);
@@ -1348,6 +1412,7 @@ document.addEventListener('click',ev=>{
   if(act==='toggle-side'){ const on=!$('#app').classList.contains('collapsed'); setCollapsed(on); return; }
   if(act==='prev') return shift(-1);
   if(act==='next') return shift(1);
+  if(act==='orient'){ state.orient=t.closest('[data-o]').dataset.o; try{localStorage.setItem('calendar-proto-orient',state.orient)}catch(e){} return render(); }
   if(act==='today'){ return goto(TODAY); }
   if(act==='view-menu'){ $('#viewMenu').classList.toggle('hidden'); return; }
   if(act==='bell'){ return bell(t.closest('[data-act]')); }
@@ -1361,6 +1426,7 @@ document.addEventListener('click',ev=>{
   const pick=t.closest('[data-pick]'); if(pick){ const d=parseKey(pick.dataset.pick); state.sel=d; if(mode()==='mobile'&&state.view==='month'){ state.cursor=d; state.view='day'; state.mmExp=false; return render(); } if(d.getMonth()!==state.cursor.getMonth()) state.cursor=new Date(d.getFullYear(),d.getMonth(),1); return render(); }
   const strip=t.closest('[data-strip]'); if(strip) return goto(parseKey(strip.dataset.strip));
   const cell=t.closest('[data-cell]'); if(cell) return goto(parseKey(cell.dataset.cell),'day');
+  const hl=t.closest('[data-hlane]'); if(hl&&!t.closest('[data-ev]')){ const r=hl.getBoundingClientRect(); const hpx=parseFloat(viewEl.querySelector('.hz').style.getPropertyValue('--hpx')); const min=Math.floor((ev.clientX-r.left)/hpx*60/30)*30; const o={date:hl.dataset.hlane,start:Math.max(0,Math.min(min,23*60))}; return openModal(o); }
   const col=t.closest('[data-col]');
   if(col){ const r=col.getBoundingClientRect(); const min=Math.floor((ev.clientY-r.top)/PPM()/30)*30; return openModal({date:col.dataset.col,start:Math.min(min,23*60)}); }
 });
