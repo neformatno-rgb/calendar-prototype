@@ -112,7 +112,7 @@ svg.i20{width:20px;height:20px}
 .period{display:flex;align-items:center;gap:8px}
 .period h1{margin:0;font-size:17px;font-weight:500;min-width:0;text-wrap:balance}
 .tools{display:flex;align-items:center;gap:8px;position:relative}
-.view{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;padding:0 12px 12px}
+.view{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;padding:0}
 .appbar,.m-header,.tabbar,.week-strip,.m-search{display:none}
 .fab{display:none;position:absolute;right:16px;bottom:84px;width:56px;height:56px;border-radius:50%;background:var(--brand);color:#fff;place-items:center;box-shadow:0 6px 16px rgba(255,25,80,.35);z-index:20;transition:transform .15s}
 .fab:hover{background:var(--brand-hover)}
@@ -255,6 +255,7 @@ svg.i20{width:20px;height:20px}
   .app-search{width:248px}
   .side-foot{display:none}
   .appbar .plus-btn{width:32px;height:32px}
+  .fab{display:grid;right:24px;bottom:24px}
 }
 /* ---------- mobile ---------- */
 @media (max-width:640px){
@@ -273,6 +274,7 @@ svg.i20{width:20px;height:20px}
   .m-search{min-width:0}
   .m-header .m-search svg.i{width:16px;height:16px;color:var(--text-2)}
   .m-search input{border:0;outline:0;background:none;flex:1;min-width:0;font-size:15px}
+  .m-header [data-act="m-search"]{color:#505050}
   .m-header.searching [data-act="m-search"]{color:var(--brand)}
   .m-sheet{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);border-radius:24px 24px 0 0;overflow:hidden;padding-top:12px}
   .m-sheet-month{padding-top:16px}
@@ -285,7 +287,8 @@ svg.i20{width:20px;height:20px}
   .wk-cell.picked b{background:var(--generic-hover)}
   .wk-cell.today b{background:var(--brand);color:#fff}
   .wk-cell.peek{opacity:.35}
-  .week-strip{display:block}
+  .week-strip{display:block;overflow:hidden}
+  .week-strip .wk,.m-days{touch-action:pan-y}
   .week-strip .grab-hit{padding:0 0 10px}
   .tl-row{grid-template-columns:56px repeat(var(--n),minmax(0,1fr))}
   .tl-hours span{left:12px;right:auto;font-size:12px}
@@ -320,7 +323,7 @@ svg.i20{width:20px;height:20px}
   .agenda-card{background:none;padding:0}
   .agenda-day{font-size:13px;font-weight:500;color:var(--text-2);margin:12px 20px 4px}
   .agenda-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px 20px;text-align:left}
-  .fab{display:grid}
+  .fab{display:grid;right:16px;bottom:84px}
   .m-header .icon-btn{width:36px;height:36px}
   .m-header svg.i{width:22px;height:22px}
   .view{padding:0}
@@ -407,6 +410,80 @@ svg.i20{width:20px;height:20px}
   .v-join{display:flex;width:100%}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.set-row{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;cursor:pointer}
+body.no-now .now,body.no-now .now-label{display:none!important}
+.st-sheet{background:var(--generic,#F2F3F5)!important;padding:8px 12px 24px!important}
+.st-top{display:flex;align-items:center;justify-content:space-between;padding:4px 8px 12px}
+.st-top h2{margin:0;font-size:24px;line-height:30px;font-weight:600;letter-spacing:-.01em}
+.st-card{background:var(--surface);border-radius:16px;padding:6px 0;margin-bottom:8px}
+.st-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 4px 16px}
+.st-head h3{margin:0;font-size:17px;line-height:22px;font-weight:600}
+.st-plus{width:36px;height:36px;border:0;background:none;border-radius:10px;display:grid;place-items:center;color:var(--text-2);cursor:pointer}
+.st-plus:active{background:var(--generic-hover)}
+.st-row{position:relative;display:flex;align-items:center;gap:14px;width:100%;min-height:52px;padding:0 12px 0 16px;border:0;background:none;font:inherit;font-size:16px;color:var(--text);text-align:left;cursor:pointer}
+.st-row:active{background:rgba(0,0,0,.03)}
+.st-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-val{color:var(--text-2);font-size:15px}
+.st-chev{color:var(--hint);flex:none}
+.st-ico{color:var(--text);display:grid}
+.st-check{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;border:2px solid var(--c);transition:background .15s}
+.st-check.on{background:var(--c)}
+.st-tz select{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;font-size:16px}
+.st-new{padding:4px 16px 8px}
+.st-new input{width:100%;height:40px;border:1px solid var(--line-strong);border-radius:10px;padding:0 12px;font:inherit;font-size:16px;outline:0}
+.st-new input:focus{border-color:var(--brand)}
+.st-empty{margin:0;padding:4px 16px 12px;color:var(--text-2);font-size:14px}
+
+.m2.sheet{padding:8px 16px 0;background:var(--surface);max-height:calc(100% - 36px);height:calc(100% - 36px);border-radius:24px 24px 0 0;display:flex;flex-direction:column}
+.m2 .handle{margin-bottom:8px;flex:none}
+.m2>*{flex:none}
+.m2-title{display:block;width:100%;border:0;outline:0;background:none;font:inherit;font-size:28px;line-height:38px;font-weight:600;color:var(--text);padding:0}
+.m2-title::placeholder,.m2-desc::placeholder{color:var(--hint)}
+.m2-desc{display:block;width:100%;border:0;outline:0;background:none;font:inherit;font-size:16px;line-height:22px;color:var(--text);padding:0;margin-top:4px;resize:none;overflow:hidden}
+.m2-dates{display:flex;gap:8px;margin-top:16px}
+.m2-date{position:relative;flex:1;min-width:0;background:var(--page);border-radius:16px;padding:10px 12px 11px 16px;display:flex;flex-direction:column;gap:2px;cursor:pointer}
+.m2-dl{font-size:13px;line-height:18px;color:var(--text-2)}
+.m2-dv{font-size:16px;line-height:22px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m2-date input,.m2-opt select{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;font-size:16px;border:0}
+.m2-opts{display:flex;align-items:center;gap:20px;padding:14px 4px 0}
+.m2-opt{position:relative;display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:0;line-height:20px;font:inherit;font-size:15px;font-weight:500;color:var(--text-2);cursor:pointer}
+.m2-opt.on{color:var(--brand)}
+.m2-card{background:var(--page);border-radius:18px;margin-top:8px;overflow:hidden}
+.m2-opts+.m2-card{margin-top:16px}
+.m2-div{display:block;height:1px;background:var(--line);margin-left:16px}
+.m2-org{display:flex;flex-direction:column;gap:8px;padding:12px 16px}
+.m2-cl{font-size:13px;line-height:18px;color:var(--text-2)}
+.m2-me{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;background:var(--surface);border-radius:18px;padding:4px 12px 4px 4px;font-size:15px}
+.m2-av{width:28px;height:28px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:600}
+.m2-row{position:relative;display:flex;align-items:center;gap:12px;min-height:52px;padding:0 12px 0 16px;cursor:pointer;font-size:16px}
+.m2-row:active{background:rgba(0,0,0,.03)}
+.m2-rl{flex:1;min-width:0}
+.m2-row.filled .m2-rl{flex:none;color:var(--text-2);font-size:13px}
+.m2-rv{flex:1;min-width:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.m2-chev{color:var(--hint);flex:none}
+.m2-ri{display:none}
+.m2-row.editing{flex-direction:column;align-items:stretch;gap:6px;padding:10px 16px 12px;cursor:default}
+.m2-row.editing .m2-rl{color:var(--text-2);font-size:13px}
+.m2-row.editing .m2-rv,.m2-row.editing .m2-chev{display:none}
+.m2-row.editing .m2-ri{display:block;width:100%;height:40px;border:1px solid var(--line-strong);border-radius:10px;padding:0 12px;font:inherit;font-size:16px;outline:0;background:var(--surface)}
+.m2-row.editing .m2-ri:focus{border-color:var(--brand)}
+.m2-line{display:flex;align-items:center;gap:12px;min-height:56px;padding:0 12px 0 16px;font-size:16px;cursor:pointer}
+.m2-ll{flex:1;min-width:0;display:flex;flex-direction:column}
+.m2-ll small{font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m2-plus{color:var(--hint);display:grid}
+.m2-tg{width:48px;height:28px;border-radius:14px;border:0;background:var(--line-strong);padding:3px;cursor:pointer;transition:background .2s;flex:none}
+.m2-tg i{display:block;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15);transition:transform .2s}
+.m2-tg.on{background:var(--brand)}
+.m2-tg.on i{transform:translateX(20px)}
+.m2-cal{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.m2-chips{display:flex;flex-wrap:wrap;gap:8px}
+.m2-chip{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:18px;padding:7px 14px 7px 8px;background:var(--surface);font:inherit;font-size:15px;font-weight:500;color:var(--text);cursor:pointer;box-shadow:inset 0 0 0 1px transparent;transition:box-shadow .15s}
+.m2-chip span{width:18px;height:18px;border-radius:50%}
+.m2-chip.on{box-shadow:inset 0 0 0 1px var(--brand)}
+.m2-foot{position:sticky;bottom:0;margin:auto -16px 0;padding:8px 16px calc(12px + env(safe-area-inset-bottom));background:var(--surface);display:flex;flex-direction:column;gap:4px;z-index:2}
+.m2-submit{height:36px;border:0;border-radius:8px;background:var(--brand);color:#fff;font:inherit;font-size:13px;cursor:pointer}
+.m2-submit:active{background:var(--brand-hover)}
+.m2-delete{height:36px;border:0;border-radius:8px;background:none;color:var(--danger,#E5343A);font:inherit;font-size:13px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -417,7 +494,7 @@ svg.i20{width:20px;height:20px}
     <span class="brand"><svg class="logo-mark" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="14" cy="14" r="14" fill="#FF1950"/><path fill-rule="evenodd" clip-rule="evenodd" d="M13.9996 6.79457C15.5275 6.79457 17.0165 6.93457 18.4483 7.17711C20.1663 7.46812 21.5012 8.82168 21.7467 10.5393C21.909 11.6748 22 12.8429 22 14.0349C22 15.5295 21.8569 16.9863 21.6095 18.3887C21.3141 20.0634 19.9885 21.364 18.3034 21.6407C16.9161 21.8686 15.4761 22 13.9996 22C12.7078 22 11.4439 21.8992 10.2188 21.7214L9.69584 21.6407C8.01086 21.3639 6.68482 20.0634 6.38969 18.3887C6.14256 16.9863 6 15.5294 6 14.0349C6.00001 12.9919 6.06953 11.9674 6.19563 10.9668L6.2533 10.5393C6.49879 8.82173 7.83383 7.46821 9.55166 7.17711C10.9832 6.93459 12.4719 6.7946 13.9996 6.79457ZM13.9996 8.38371C12.5702 8.38374 11.1715 8.51478 9.81977 8.74374C8.7791 8.92012 7.9798 9.73695 7.83311 10.7635C7.68067 11.8305 7.59619 12.9235 7.59618 14.0349C7.59618 15.4287 7.729 16.7934 7.96171 18.1141C8.13906 19.1204 8.93603 19.905 9.95538 20.0726C11.265 20.2876 12.618 20.4108 13.9996 20.4109C15.3811 20.4109 16.7342 20.2876 18.0438 20.0726C19.0633 19.905 19.8599 19.1206 20.0375 18.1141C20.2705 16.7933 20.4038 15.4287 20.4038 14.0349C20.4038 12.9234 20.3193 11.8305 20.1669 10.7635C20.0202 9.73691 19.221 8.92004 18.1802 8.74374C16.8282 8.51475 15.4293 8.38371 13.9996 8.38371Z" fill="white"/><path d="M18.0095 9.97284C18.4503 9.97284 18.8076 10.3286 18.8076 10.7674C18.8076 11.2062 18.4503 11.562 18.0095 11.562H10.0286C9.58787 11.562 9.23055 11.2062 9.23055 10.7674C9.23055 10.3286 9.58787 9.97284 10.0286 9.97284H18.0095Z" fill="white"/><path d="M10.0286 6C10.4694 6 10.8267 6.35574 10.8267 6.79457V8.38371C10.8267 8.82253 10.4694 9.17827 10.0286 9.17827C9.58787 9.17827 9.23055 8.82253 9.23055 8.38371V6.79457C9.23055 6.35574 9.58787 6 10.0286 6Z" fill="white"/><path d="M18.0095 6C18.4503 6 18.8076 6.35574 18.8076 6.79457V8.38371C18.8076 8.82253 18.4503 9.17827 18.0095 9.17827C17.5688 9.17827 17.2115 8.82253 17.2115 8.38371V6.79457C17.2115 6.35574 17.5688 6 18.0095 6Z" fill="white"/></svg><span class="brand-name">Calendar</span></span>
     <div class="spacer"></div>
     <label class="field app-search" for="searchT"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="searchT" class="search-input" placeholder="Поиск по событиям" autocomplete="off"></label>
-    <button class="icon-btn outlined bell-btn" data-act="bell" aria-label="Уведомления" style="width:32px;height:32px"><svg class="i" viewBox="0 0 16 16"><path d="M4 11V7a4 4 0 018 0v4l1 1.5H3L4 11zM6.5 14h3"/></svg></button>
+    <button class="icon-btn outlined bell-btn" data-act="bell" aria-label="Уведомления" style="width:32px;height:32px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.66527 11.8222L9.28446 8.72621C9.54335 7.43176 10.6799 6.5 12 6.5C13.3201 6.5 14.4566 7.43176 14.7155 8.72621L15.3347 11.8222C15.5196 12.7464 15.9738 13.5951 16.6403 14.2616L16.8341 14.4554C16.9403 14.5616 17 14.7057 17 14.856C17 15.1198 16.8179 15.3488 16.5608 15.4081L15.7396 15.5976C13.2789 16.1655 10.7211 16.1655 8.26039 15.5976L7.43918 15.4081C7.18211 15.3488 7 15.1198 7 14.856C7 14.7057 7.05969 14.5616 7.16595 14.4554L7.35974 14.2616C8.02618 13.5951 8.48044 12.7464 8.66527 11.8222ZM7.1944 11.528L7.81359 8.43203C8.21271 6.43645 9.9649 5 12 5C14.0351 5 15.7873 6.43645 16.1864 8.43203L16.8056 11.528C16.9324 12.1618 17.2439 12.7439 17.7009 13.2009L17.8947 13.3947C18.2823 13.7823 18.5 14.3079 18.5 14.856C18.5 15.8183 17.8358 16.6533 16.8981 16.8697L16.0769 17.0592C15.376 17.2209 14.6679 17.3404 13.9563 17.4176C13.7643 18.3218 12.9614 19.0001 12 19.0001C11.0386 19.0001 10.2357 18.3218 10.0437 17.4176C9.3321 17.3404 8.62399 17.2209 7.9231 17.0592L7.10189 16.8697C6.16422 16.6533 5.5 15.8183 5.5 14.856C5.5 14.3079 5.71773 13.7823 6.10529 13.3947L6.29908 13.2009C6.75612 12.7439 7.06764 12.1618 7.1944 11.528Z" fill-rule="evenodd" clip-rule="evenodd" fill="#323232" fill-opacity="0.85"/></svg></button>
   </div>
 
   <aside class="sidebar" id="sidebar" aria-label="Боковая панель">
@@ -438,7 +515,6 @@ svg.i20{width:20px;height:20px}
       <div class="grp-head"><button class="grp-add" data-act="shared-add" aria-label="Добавить общий календарь" title="Добавить человека"><svg class="i" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg></button><span class="grp-title">Общие календари</span><button class="grp-toggle" data-act="grp-toggle" data-grp="grpShared" aria-expanded="true" aria-label="Свернуть список"><svg class="i" viewBox="0 0 16 16"><path d="M4.5 10L8 6.5l3.5 3.5"/></svg></button></div>
       <div class="grp-body" id="sharedList"></div>
     </div>
-    <div class="side-foot"><button class="plus-btn collapse-btn side-collapse" data-act="toggle-side" aria-label="Скрыть боковое меню" title="Скрыть боковое меню"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M7 13H19M10 10L7 13L10 16" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
   </aside>
 
   <main class="main">
@@ -449,7 +525,7 @@ svg.i20{width:20px;height:20px}
       <label class="field" for="search"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="search" class="search-input" placeholder="Поиск по событиям" autocomplete="off"></label>
       </div>
       <div class="top-right" style="position:relative">
-        <button class="icon-btn outlined bell-btn" data-act="bell" aria-label="Уведомления"><svg class="i" viewBox="0 0 16 16"><path d="M4 11V7a4 4 0 018 0v4l1 1.5H3L4 11zM6.5 14h3"/></svg></button>
+        <button class="icon-btn outlined bell-btn" data-act="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.66527 11.8222L9.28446 8.72621C9.54335 7.43176 10.6799 6.5 12 6.5C13.3201 6.5 14.4566 7.43176 14.7155 8.72621L15.3347 11.8222C15.5196 12.7464 15.9738 13.5951 16.6403 14.2616L16.8341 14.4554C16.9403 14.5616 17 14.7057 17 14.856C17 15.1198 16.8179 15.3488 16.5608 15.4081L15.7396 15.5976C13.2789 16.1655 10.7211 16.1655 8.26039 15.5976L7.43918 15.4081C7.18211 15.3488 7 15.1198 7 14.856C7 14.7057 7.05969 14.5616 7.16595 14.4554L7.35974 14.2616C8.02618 13.5951 8.48044 12.7464 8.66527 11.8222ZM7.1944 11.528L7.81359 8.43203C8.21271 6.43645 9.9649 5 12 5C14.0351 5 15.7873 6.43645 16.1864 8.43203L16.8056 11.528C16.9324 12.1618 17.2439 12.7439 17.7009 13.2009L17.8947 13.3947C18.2823 13.7823 18.5 14.3079 18.5 14.856C18.5 15.8183 17.8358 16.6533 16.8981 16.8697L16.0769 17.0592C15.376 17.2209 14.6679 17.3404 13.9563 17.4176C13.7643 18.3218 12.9614 19.0001 12 19.0001C11.0386 19.0001 10.2357 18.3218 10.0437 17.4176C9.3321 17.3404 8.62399 17.2209 7.9231 17.0592L7.10189 16.8697C6.16422 16.6533 5.5 15.8183 5.5 14.856C5.5 14.3079 5.71773 13.7823 6.10529 13.3947L6.29908 13.2009C6.75612 12.7439 7.06764 12.1618 7.1944 11.528Z" fill-rule="evenodd" clip-rule="evenodd" fill="#323232" fill-opacity="0.85"/></svg></button>
       </div>
     </div>
     <div class="toolbar">
@@ -471,8 +547,8 @@ svg.i20{width:20px;height:20px}
     <div class="m-header">
       <h1 id="mTitle"></h1>
       <label class="m-search" for="searchM"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="searchM" class="search-input" placeholder="Поиск по событиям" autocomplete="off"></label>
-      <button class="icon-btn" data-act="m-search" aria-label="Поиск"><svg class="i" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5"/><path d="M13.2 13.2l3.3 3.3"/></svg></button>
-      <button class="icon-btn bell-btn" data-act="bell" aria-label="Уведомления"><svg class="i" viewBox="0 0 20 20"><path d="M5.5 13.5V9a4.5 4.5 0 019 0v4.5l1.25 1.75H4.25L5.5 13.5zM8.25 17.25h3.5"/></svg></button>
+      <button class="icon-btn" data-act="m-search" aria-label="Поиск"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15.625 11.125C15.625 13.6103 13.6103 15.625 11.125 15.625C8.63972 15.625 6.625 13.6103 6.625 11.125C6.625 8.63972 8.63972 6.625 11.125 6.625C13.6103 6.625 15.625 8.63972 15.625 11.125ZM14.8042 15.8649C13.7882 16.6547 12.5115 17.125 11.125 17.125C7.81129 17.125 5.125 14.4387 5.125 11.125C5.125 7.81129 7.81129 5.125 11.125 5.125C14.4387 5.125 17.125 7.81129 17.125 11.125C17.125 12.5115 16.6547 13.7882 15.8649 14.8042L18.6553 17.5947C18.9482 17.8876 18.9482 18.3624 18.6553 18.6553C18.3624 18.9482 17.8876 18.9482 17.5947 18.6553L14.8042 15.8649Z" fill-rule="evenodd" clip-rule="evenodd" fill="currentColor"/></svg></button>
+      <button class="icon-btn bell-btn" data-act="bell" aria-label="Уведомления"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8.66527 11.8222L9.28446 8.72621C9.54335 7.43176 10.6799 6.5 12 6.5C13.3201 6.5 14.4566 7.43176 14.7155 8.72621L15.3347 11.8222C15.5196 12.7464 15.9738 13.5951 16.6403 14.2616L16.8341 14.4554C16.9403 14.5616 17 14.7057 17 14.856C17 15.1198 16.8179 15.3488 16.5608 15.4081L15.7396 15.5976C13.2789 16.1655 10.7211 16.1655 8.26039 15.5976L7.43918 15.4081C7.18211 15.3488 7 15.1198 7 14.856C7 14.7057 7.05969 14.5616 7.16595 14.4554L7.35974 14.2616C8.02618 13.5951 8.48044 12.7464 8.66527 11.8222ZM7.1944 11.528L7.81359 8.43203C8.21271 6.43645 9.9649 5 12 5C14.0351 5 15.7873 6.43645 16.1864 8.43203L16.8056 11.528C16.9324 12.1618 17.2439 12.7439 17.7009 13.2009L17.8947 13.3947C18.2823 13.7823 18.5 14.3079 18.5 14.856C18.5 15.8183 17.8358 16.6533 16.8981 16.8697L16.0769 17.0592C15.376 17.2209 14.6679 17.3404 13.9563 17.4176C13.7643 18.3218 12.9614 19.0001 12 19.0001C11.0386 19.0001 10.2357 18.3218 10.0437 17.4176C9.3321 17.3404 8.62399 17.2209 7.9231 17.0592L7.10189 16.8697C6.16422 16.6533 5.5 15.8183 5.5 14.856C5.5 14.3079 5.71773 13.7823 6.10529 13.3947L6.29908 13.2009C6.75612 12.7439 7.06764 12.1618 7.1944 11.528Z" fill-rule="evenodd" clip-rule="evenodd" fill="#323232" fill-opacity="0.85"/></svg></button><button class="icon-btn gear-btn" data-act="settings" aria-label="Настройки" title="Настройки"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M11.1988 6H12.8013C12.911 6 13 6.08897 13 6.19874C13 8.00722 14.9577 9.13763 16.524 8.23334C16.619 8.17848 16.7405 8.21104 16.7954 8.30606L17.5967 9.69395C17.6516 9.789 17.619 9.91054 17.524 9.96542C15.9577 10.8697 15.9577 13.1304 17.524 14.0346C17.619 14.0895 17.6516 14.2111 17.5967 14.3061L16.7954 15.694C16.7405 15.789 16.619 15.8216 16.524 15.7667C14.9578 14.8624 13 15.9928 13 17.8013C13 17.911 12.911 18 12.8013 18H11.1987C11.089 18 11 17.911 11 17.8013C11 15.9927 9.04213 14.8624 7.47592 15.7667C7.38083 15.8216 7.25926 15.789 7.20438 15.6939L6.40313 14.3061C6.34825 14.2111 6.38082 14.0895 6.47587 14.0346C8.04211 13.1304 8.04211 10.8697 6.47587 9.96541C6.38082 9.91054 6.34825 9.78899 6.40313 9.69394L7.20438 8.30614C7.25926 8.21107 7.38084 8.1785 7.47591 8.23339C9.04216 9.13766 11 8.00733 11 6.19877C11 6.08899 11.089 6 11.1988 6ZM9.49999 6.19877C9.49999 5.26056 10.2606 4.5 11.1988 4.5H12.8013C13.7394 4.5 14.5 5.26056 14.5 6.19874C14.5 6.85256 15.2078 7.26121 15.774 6.9343C16.5865 6.46522 17.6254 6.7436 18.0944 7.55606L18.8957 8.94395C19.3648 9.75644 19.0865 10.7954 18.274 11.2645C17.7077 11.5914 17.7077 12.4087 18.274 12.7356C19.0865 13.2047 19.3648 14.2436 18.8957 15.0561L18.0944 16.444C17.6254 17.2565 16.5865 17.5348 15.774 17.0657C15.2078 16.7388 14.5 17.1475 14.5 17.8013C14.5 18.7395 13.7395 19.5 12.8013 19.5H11.1987C10.2605 19.5 9.49999 18.7394 9.49999 17.8013C9.49999 17.1474 8.79217 16.7388 8.22592 17.0657C7.41341 17.5348 6.37444 17.2564 5.90534 16.4439L5.10409 15.0561C4.635 14.2436 4.91338 13.2047 5.72587 12.7356C6.29211 12.4087 6.29211 11.5914 5.72587 11.2645C4.91338 10.7954 4.635 9.75643 5.10409 8.94394L5.90534 7.55614C6.37444 6.74363 7.4134 6.46525 8.22591 6.93435C8.79217 7.26128 9.49999 6.85262 9.49999 6.19877ZM13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1715 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1715 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12ZM15 12C15 13.6569 13.6568 15 12 15C10.3431 15 8.99996 13.6569 8.99996 12C8.99996 10.3431 10.3431 9 12 9C13.6568 9 15 10.3431 15 12Z" fill-rule="evenodd" clip-rule="evenodd" fill="#323232" fill-opacity="0.85"/></svg></button>
     </div>
     <div class="view" id="view"></div>
     <button class="fab" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -481,6 +557,7 @@ svg.i20{width:20px;height:20px}
       <button role="tab" data-view="three"><svg class="i" viewBox="0 0 20 20"><rect x="2.75" y="3.75" width="14.5" height="13.5" rx="2.5"/><path d="M2.75 7.75h14.5M7.5 10.5v4M10 10.5v4M12.5 10.5v4"/></svg>3 дня</button>
       <button role="tab" data-view="month"><svg class="i" viewBox="0 0 20 20"><rect x="2.75" y="3.75" width="14.5" height="13.5" rx="2.5"/><path d="M2.75 7.75h14.5"/><circle cx="6.5" cy="11" r=".9" fill="currentColor"/><circle cx="10" cy="11" r=".9" fill="currentColor"/><circle cx="13.5" cy="11" r=".9" fill="currentColor"/><circle cx="6.5" cy="14" r=".9" fill="currentColor"/><circle cx="10" cy="14" r=".9" fill="currentColor"/></svg>Месяц</button></nav>
   </main>
+  
   <div class="pop hidden" id="bellPop" role="dialog" aria-label="Уведомления"></div>
 </div>
 
@@ -556,6 +633,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 // ---------- data ----------
 const COLORS={work:'#5F99FF',personal:'#FFBE5C'};
 try{ Object.assign(COLORS, JSON.parse(localStorage.getItem('calendar-proto-colors'))||{}) }catch(e){}
+let TZ='UTC+3';
 let CALS=[{id:'work',name:'Рабочий'},{id:'personal',name:'Личный'}];
 try{ const c=JSON.parse(localStorage.getItem('calendar-proto-cals')); if(Array.isArray(c)&&c.length) CALS=c; }catch(e){}
 for(const c of CALS) if(!COLORS[c.id]) COLORS[c.id]='#7E8A99';
@@ -628,7 +706,7 @@ const $=s=>document.querySelector(s);
 const viewEl=$('#view');
 function render(keepScroll){
   normView();
-  if(typeof closeView==='function'&&view) closeView();
+  if(typeof closeView==='function'&&view&&!view.querySelector('.st-sheet')) closeView();
   const prevScroll=viewEl.querySelector('.tl-scroll')?.scrollTop;
   const c=state.cursor;
   // titles
@@ -656,7 +734,7 @@ function render(keepScroll){
 
 function timeline(days){
   const n=days.length, m=mode(), ppm=PPM();
-  const head = m!=='mobile' ? `<div class="tl-row tl-head" style="--n:${n}"><div class="tl-tz">GMT+3</div>${days.map(d=>`<button class="day-h${sameDay(d,TODAY)?' today':''}" data-goto-day="${key(d)}">${WD[dow(d)]} <b>${d.getDate()}</b></button>`).join('')}</div>`:'';
+  const head = m!=='mobile' ? `<div class="tl-row tl-head" style="--n:${n}"><div class="tl-tz">${TZ.replace('UTC','GMT')}</div>${days.map(d=>`<button class="day-h${sameDay(d,TODAY)?' today':''}" data-goto-day="${key(d)}">${WD[dow(d)]} <b>${d.getDate()}</b></button>`).join('')}</div>`:'';
   const ad=days.map(d=>dayEvents(d).filter(e=>e.allDay));
   const allday = ad.some(a=>a.length)?`<div class="tl-row tl-allday" style="--n:${n}"><div class="ad-label">весь день</div>${ad.map((list,i)=>`<div class="ad-cell">${list.map(e=>chip(e,days[i],true)).join('')}</div>`).join('')}</div>`:'';
   const nowMin=TODAY.getHours()*60+TODAY.getMinutes(), hasToday=days.some(d=>sameDay(d,TODAY));
@@ -740,6 +818,7 @@ let modal=null, draft=null;
 const times=[...Array(96)].map((_,i)=>fromMin(i*15));
 function openModal(opts={}){
   closeModal();
+  if(mode()==='mobile') return openModalM2(opts);
   const node=$('#modalTpl').content.firstElementChild.cloneNode(true);
   document.body.appendChild(node); modal=node;
   const f=node.querySelector('form');
@@ -814,6 +893,93 @@ function busyCheck(){
   modal.querySelector('#busyBox').innerHTML=conflicts.length?`<div class="busy warn">${who}В это время в ваших календарях: ${conflicts.map(e=>`<b>${esc(e.title)}</b>${e.allDay?' (весь день)':` ${e.start}–${e.end}`}`).join(', ')}.</div>`:`<div class="busy">${who}В это время в ваших календарях ничего нет.</div>`;
 }
 
+
+
+// ---------- mobile create/edit sheet (v2, Figma «Mobile · Создание события (v2)») ----------
+const M2I={
+ x:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+ arrow:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4.5 10h11M11 5.5l4.5 4.5-4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ trash:'<svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 6h12M8 6V4.5h4V6M5.5 6l.8 10a1.5 1.5 0 001.5 1.4h4.4a1.5 1.5 0 001.5-1.4l.8-10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ chev:'<svg class="m2-chev" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ plus:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+ globe:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.6"/><path d="M3.9 10.5c2 .2 3.4 1 3.8 2.6.4 1.4 1.6 1.6 2.4 2.6.7.9.2 2.6-.4 4M14.5 4.2c-.6 1.3-.2 2.4 1 2.9 1.4.6 1.6 1.7 1 2.9-.5 1-.1 2.2 1.1 2.6 1.1.4 2 .3 2.5-.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ video:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.75" y="6.75" width="11.5" height="10.5" rx="2.25" stroke="currentColor" stroke-width="1.5"/><path d="M15.25 10.5l4.2-2.4c.5-.3 1.05.07 1.05.62v6.56c0 .55-.55.92-1.05.62l-4.2-2.4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+ clip:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18.5 11.5l-6.4 6.4a4.2 4.2 0 01-6-6l6.9-6.9a2.8 2.8 0 014 4l-6.9 6.9a1.4 1.4 0 01-2-2l6.3-6.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+};
+const REP_L={none:'Повторять',daily:'Каждый день',weekly:'Каждую неделю',monthly:'Каждый месяц'};
+let m2Edit=null;
+function openModalM2(opts){
+  const editing=opts.id?events.find(e=>e.id===opts.id):null;
+  const base=new Date(state.cursor);
+  const startMin=opts.start!=null?opts.start:Math.min(Math.ceil((TODAY.getHours()*60+TODAY.getMinutes())/30)*30,22*60);
+  draft=editing?JSON.parse(JSON.stringify(editing)):mk({title:'',date:opts.date||key(state.view==='month'?state.sel:base),start:fromMin(startMin),end:fromMin(Math.min(startMin+60,23*60+45)),cal:CALS[0]?.id||'work'});
+  if(!editing) { uid--; draft.id='e'+(uid++); }
+  draft.optGuests=draft.optGuests||''; draft.address=draft.address||''; draft.tz=draft.tz||TZ;
+  m2Edit=editing?draft.id:null;
+  modal=document.createElement('div'); modal.className='backdrop m2-bd'; modal.dataset.act='close-bg';
+  modal.innerHTML=`<div class="sheet m2" role="dialog" aria-modal="true" aria-label="${editing?'Редактирование события':'Новое событие'}"></div>`;
+  document.body.appendChild(modal); renderM2();
+  if(!editing) setTimeout(()=>modal?.querySelector('#m2Title')?.focus(),60);
+}
+function m2When(withTime,t){ const d=parseKey(draft.date); return `${d.getDate()} ${MONTHS_G[d.getMonth()]}${withTime?', '+t:''}`; }
+function m2Row(f,label,ph){ const v=draft[f]||''; return `<div class="m2-row${v?' filled':''}" data-act="m2-edit" data-f="${f}"><span class="m2-rl">${label}</span>${v?`<span class="m2-rv">${esc(v)}</span>`:''}${M2I.chev}<input class="m2-ri" data-f="${f}" value="${esc(v)}" placeholder="${ph}" autocomplete="off" enterkeyhint="done"></div>`; }
+function renderM2(){
+  if(!modal) return; const sh=modal.querySelector('.sheet'); const st=sh.scrollTop;
+  const c=colorOf(draft);
+  const startV=`${draft.date}T${draft.start||'12:00'}`, endV=`${draft.date}T${draft.end||'13:00'}`;
+  const dateCard=(lbl,txt,inp)=>`<label class="m2-date"><span class="m2-dl">${lbl}</span><span class="m2-dv">${txt}</span>${inp}</label>`;
+  sh.innerHTML=`<div class="handle"></div>
+  <input class="m2-title" id="m2Title" data-f="title" value="${esc(draft.title)}" placeholder="Название" autocomplete="off" enterkeyhint="next">
+  <textarea class="m2-desc" id="m2Desc" data-f="desc" rows="1" placeholder="Описание">${esc(draft.desc)}</textarea>
+  <div class="m2-dates">
+    ${draft.allDay
+      ? dateCard('Начало',m2When(false),`<input type="date" data-f="date" value="${draft.date}" aria-label="Дата">`)+dateCard('Окончание',m2When(false),`<input type="date" data-f="date" value="${draft.date}" aria-label="Дата окончания">`)
+      : dateCard('Начало',m2When(true,draft.start),`<input type="datetime-local" step="900" data-f="startDT" value="${startV}" aria-label="Начало">`)+dateCard('Окончание',m2When(true,draft.end),`<input type="time" step="900" data-f="endT" value="${draft.end}" aria-label="Окончание">`)}
+  </div>
+  <div class="m2-opts">
+    <button type="button" class="m2-opt${draft.allDay?' on':''}" data-act="m2-allday" aria-pressed="${draft.allDay}">Весь день</button>
+    <label class="m2-opt${draft.repeat!=='none'?' on':''}">${REP_L[draft.repeat]||'Повторять'}<select data-f="repeat" aria-label="Повтор">${Object.entries(REP_L).map(([k,l])=>`<option value="${k}"${k===draft.repeat?' selected':''}>${k==='none'?'Не повторять':l}</option>`).join('')}</select></label>
+    <label class="m2-opt m2-tz">${M2I.globe}${draft.tz}<select data-f="tz" aria-label="Часовой пояс">${TZS.map(z=>`<option${z===draft.tz?' selected':''}>${z}</option>`).join('')}</select></label>
+  </div>
+  <section class="m2-card">
+    <div class="m2-org"><span class="m2-cl">Организатор</span><span class="m2-me"><span class="m2-av">АК</span>Я</span></div>
+    <i class="m2-div"></i>${m2Row('guests','Участники','Имена или почты через запятую')}
+    <i class="m2-div"></i>${m2Row('optGuests','Опциональные участники','Имена или почты через запятую')}
+  </section>
+  <section class="m2-card"><div class="m2-line">${M2I.video}<span class="m2-ll">Видеовстреча${draft.link?`<small>${esc(draft.link.replace(/^https?:\/\//,''))}</small>`:''}</span><button type="button" class="m2-tg${draft.link?' on':''}" data-act="m2-video" role="switch" aria-checked="${!!draft.link}" aria-label="Видеовстреча"><i></i></button></div></section>
+  <section class="m2-card">${m2Row('place','Переговорка','Например, «Космос», 3 этаж')}<i class="m2-div"></i>${m2Row('address','Адрес','Улица, дом')}</section>
+  <section class="m2-card"><label class="m2-line">${M2I.clip}<span class="m2-ll">Файлы${draft.files.length?`<small>${draft.files.map(esc).join(', ')}</small>`:''}</span><span class="m2-plus">${M2I.plus}</span><input type="file" multiple data-f="files" hidden></label></section>
+  <section class="m2-card m2-cal"><span class="m2-cl">Календарь</span><div class="m2-chips">${CALS.map(k=>`<button type="button" class="m2-chip${k.id===draft.cal?' on':''}" data-act="m2-cal" data-cal="${k.id}" aria-pressed="${k.id===draft.cal}"><span style="background:${COLORS[k.id]}"></span>${esc(k.name)}</button>`).join('')}</div></section>
+  <div class="m2-foot"><button type="button" class="m2-submit" data-act="m2-save">${m2Edit?'Сохранить':'Создать'}</button>${m2Edit?'<button type="button" class="m2-delete" data-act="m2-del">Удалить событие</button>':''}</div>`;
+  sh.scrollTop=st;
+  const ta=sh.querySelector('#m2Desc'); autoGrow(ta);
+  sh.oninput=sh.onchange=m2Input;
+  sh.querySelectorAll('.m2-ri').forEach(i=>{ i.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); i.blur(); } }); i.addEventListener('blur',()=>{ draft[i.dataset.f]=i.value.trim(); i.closest('.m2-row').classList.remove('editing'); renderM2(); }); });
+}
+function m2Input(e){
+  const t=e.target, f=t.dataset.f; if(!f) return;
+  if(f==='title'||f==='desc'){ draft[f]=t.value; if(f==='desc') autoGrow(t); return; }
+  if(f==='guests'||f==='optGuests'||f==='place'||f==='address') return; // saved on blur
+  if(e.type==='input'&&t.type!=='file') return;
+  if(f==='startDT'&&t.value){ const [d,tm]=t.value.split('T'); const dur=toMin(draft.end)-toMin(draft.start); draft.date=d; draft.start=tm.slice(0,5); draft.end=fromMin(Math.min(toMin(draft.start)+Math.max(dur,15),23*60+45)); }
+  if(f==='endT'&&t.value){ draft.end=t.value.slice(0,5); if(toMin(draft.end)<=toMin(draft.start)) draft.end=fromMin(Math.min(toMin(draft.start)+15,23*60+45)); }
+  if(f==='date'&&t.value) draft.date=t.value;
+  if(f==='repeat') draft.repeat=t.value;
+  if(f==='tz') draft.tz=t.value;
+  if(f==='files'){ draft.files=[...draft.files,...[...t.files].map(x=>x.name)]; }
+  renderM2();
+}
+function m2Click(t,act){
+  const sh=modal.querySelector('.sheet');
+  if(act==='m2-save') return onSave({preventDefault(){}});
+  if(act==='m2-del'){ events=events.filter(e=>e.id!==draft.id); save(); closeModal(); render(true); return toast('Событие удалено'); }
+  if(act==='m2-color'){ const sw=sh.querySelector('#m2Sw'); const on=sw.classList.toggle('hidden'); t.closest('[data-act]').setAttribute('aria-expanded',!on); return; }
+  if(act==='m2-sw'){ draft.color=t.closest('[data-c]').dataset.c||null; return renderM2(); }
+  if(act==='m2-allday'){ draft.allDay=!draft.allDay; if(!draft.allDay){ draft.start=draft.start||'12:00'; draft.end=draft.end||'13:00'; } return renderM2(); }
+  if(act==='m2-video'){ draft.link=draft.link?'':`https://telemost.example/${Math.random().toString(36).slice(2,5)}-${Math.random().toString(36).slice(2,6)}`; return renderM2(); }
+  if(act==='m2-cal'){ draft.cal=t.closest('[data-cal]').dataset.cal; return renderM2(); }
+  if(act==='m2-edit'){ const r=t.closest('.m2-row'); if(r.classList.contains('editing')) return; r.classList.add('editing'); const i=r.querySelector('.m2-ri'); i.focus(); const n=i.value.length; i.setSelectionRange(n,n); return; }
+}
 
 // ---------- event view ----------
 const WD_FULL=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
@@ -983,6 +1149,41 @@ document.addEventListener('pointerup',()=>{
 document.addEventListener('pointercancel',()=>{ if(drag&&drag.id==='grabCollapse'&&!drag.exp) setCollapse(0,true); drag=null; });
 document.addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ') return; if(e.target.id==='grabCollapse'){e.preventDefault(); state.mmExp?setExpanded(false):collapseToDay()} if(e.target.id==='grabExpand'){e.preventDefault();expandToMonth()} });
 
+// ---------- settings bottom sheet (mobile) ----------
+const TZS=['UTC−5','UTC±0','UTC+1','UTC+2','UTC+3','UTC+4','UTC+5','UTC+7','UTC+8','UTC+10'];
+const CHEV='<svg class="st-chev" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M8 5l5 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CHECK='<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.2l3 3 6-6.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const PLUS='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+const GLOBE='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.5"/><path d="M3.9 10.5c2 .2 3.4 1 3.8 2.6.4 1.4 1.6 1.6 2.4 2.6.7.9.2 2.6-.4 4M14.5 4.2c-.6 1.3-.2 2.4 1 2.9 1.4.6 1.6 1.7 1 2.9-.5 1-.1 2.2 1.1 2.6 1.1.4 2 .3 2.5-.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function settingsHTML(){
+  const cal=c=>{ const on=!state.hidden.has(c.id); return `<button type="button" class="st-row" data-act="st-cal" data-cal="${c.id}" role="switch" aria-checked="${on}"><span class="st-check${on?' on':''}" style="--c:var(--${c.id})">${on?CHECK:''}</span><span class="st-label">${esc(calFull(c.id))}</span>${CHEV}</button>`; };
+  return `<div class="handle"></div>
+  <div class="st-top"><h2 id="stTitle">Настройки календаря</h2></div>
+  <section class="st-card"><label class="st-row st-tz"><span class="st-ico">${GLOBE}</span><span class="st-label">Часовой пояс</span><span class="st-val" id="stTzVal">${TZ}</span>${CHEV}<select id="stTz" aria-label="Часовой пояс">${TZS.map(z=>`<option${z===TZ?' selected':''}>${z}</option>`).join('')}</select></label></section>
+  <section class="st-card"><div class="st-head"><h3>Мои календари</h3><button type="button" class="st-plus" data-act="st-add" aria-label="Создать календарь">${PLUS}</button></div>
+    ${CALS.map(cal).join('')}
+    <div class="st-new" id="stNewRow" hidden><input id="stNewName" placeholder="Название календаря" autocomplete="off" enterkeyhint="done"></div></section>
+  <section class="st-card"><div class="st-head"><h3>Общие календари</h3><button type="button" class="st-plus" data-act="st-shared-add" aria-label="Добавить общий календарь">${PLUS}</button></div>
+    ${state.shared.length?state.shared.map((n,i)=>`<div class="st-row"><span class="st-check on" style="--c:${SWATCHES[(i+1)%SWATCHES.length]}">${CHECK}</span><span class="st-label">${esc(n)}</span>${CHEV}</div>`).join(''):'<p class="st-empty">Пока пусто. Нажмите «+», чтобы добавить календарь коллеги</p>'}
+    <div class="st-new" id="stShRow" hidden><input id="stShName" placeholder="Имя или почта" autocomplete="off" enterkeyhint="done"></div></section>`;
+}
+function bindSettings(){
+  const sh=view.querySelector('.sheet');
+  sh.querySelector('#stTz').addEventListener('change',e=>{ TZ=e.target.value; sh.querySelector('#stTzVal').textContent=TZ; render(true); toast('Часовой пояс: '+TZ); });
+  sh.querySelector('#stNewName').addEventListener('keydown',e=>{ if(e.key!=='Enter') return; e.preventDefault(); const name=e.target.value.trim(); if(!name) return;
+    const id='c'+Date.now().toString(36); const used=new Set(Object.values(COLORS).map(c=>c.toLowerCase()));
+    COLORS[id]=SWATCHES.find(c=>!used.has(c.toLowerCase()))||SWATCHES[CALS.length%SWATCHES.length];
+    CALS.push({id,name}); saveCals(); applyCalColors(); renderCals(); renderSettings(); toast(`Календарь «${name}» создан`); });
+  sh.querySelector('#stShName').addEventListener('keydown',e=>{ if(e.key!=='Enter') return; e.preventDefault(); const n=e.target.value.trim(); if(!n) return; state.shared.push(n); renderShared(); renderSettings(); toast('Календарь добавлен в «Общие»'); });
+}
+function renderSettings(){ if(!view||!view.querySelector('.st-sheet')) return; const sh=view.querySelector('.sheet'); const st=sh.scrollTop; sh.innerHTML=settingsHTML(); sh.scrollTop=st; bindSettings(); }
+function openSettings(){
+  closeView(); closeModal(); closePopovers();
+  view=document.createElement('div'); view.className='backdrop'; view.dataset.act='v-bg';
+  view.innerHTML=`<div class="sheet st-sheet" role="dialog" aria-modal="true" aria-labelledby="stTitle">${settingsHTML()}</div>`;
+  document.body.appendChild(view); bindSettings();
+  view.querySelector('.st-sheet').setAttribute('tabindex','-1'); view.querySelector('.st-sheet').focus({preventScroll:true});
+}
 // ---------- swipe-to-dismiss for mobile sheets ----------
 function dismissSheet(bd,sh){
   const h=sh.offsetHeight;
@@ -1053,9 +1254,17 @@ function calPopClick(t){
 // ---------- horizontal swipe between months (mobile) ----------
 let hs=null, suppressClick=false;
 document.addEventListener('pointerdown',e=>{
-  if(mode()!=='mobile'||state.view!=='month') return;
-  const w=e.target.closest('#mmWrap'); if(!w) return;
-  hs={x:e.clientX,y:e.clientY,t:performance.now(),lx:e.clientX,v:0,lock:null,w,g:$('#mmGrid'),pid:e.pointerId};
+  if(mode()!=='mobile') return;
+  if(state.view==='month'){
+    const w=e.target.closest('#mmWrap'); if(!w) return;
+    hs={x:e.clientX,y:e.clientY,t:performance.now(),lx:e.clientX,v:0,lock:null,w,g:$('#mmGrid'),sel:'#mmGrid',step:d=>shift(d),pid:e.pointerId};
+  } else if(state.view==='day'){
+    const w=e.target.closest('.week-strip .wk'); if(!w) return;
+    hs={x:e.clientX,y:e.clientY,t:performance.now(),lx:e.clientX,v:0,lock:null,w,g:w,sel:'.week-strip .wk',step:d=>{ state.cursor=addDays(state.cursor,7*d); render(); },pid:e.pointerId};
+  } else if(state.view==='three-days'||state.view==='3day'||state.view==='three'){
+    const w=e.target.closest('.m-days'); if(!w) return;
+    hs={x:e.clientX,y:e.clientY,t:performance.now(),lx:e.clientX,v:0,lock:null,w,g:w,sel:'.m-days',step:d=>shift(d),pid:e.pointerId};
+  }
 });
 document.addEventListener('pointermove',e=>{
   if(!hs) return; const dx=e.clientX-hs.x, dy=e.clientY-hs.y;
@@ -1072,8 +1281,8 @@ function endHSwipe(){
     const dir=dx<0?1:-1, fast=reduce()?0:180;
     h.g.style.transition=`transform ${fast}ms ease-in`; h.g.style.transform=`translateX(${-dir*W}px)`;
     setTimeout(()=>{
-      shift(dir);
-      const g=$('#mmGrid'); if(!g||reduce()) return;
+      h.step(dir);
+      const g=document.querySelector(h.sel); if(!g||reduce()) return;
       g.style.transition='none'; g.style.transform=`translateX(${dir*W}px)`; g.offsetHeight;
       g.style.transition='transform .22s cubic-bezier(.2,.8,.2,1)'; g.style.transform='';
     },fast);
@@ -1105,9 +1314,18 @@ document.addEventListener('click',ev=>{
   if(calPop&&calPop.contains(t)) return calPopClick(t);
   if(act==='cal-color'||act==='cal-menu'){ const b=t.closest('[data-act]'); if(calPop&&calPop.dataset.for===b.dataset.cal+act){ return closeCalPop(); } openCalPop(b,b.dataset.cal,act==='cal-menu'?'menu':'color'); calPop.dataset.for=b.dataset.cal+act; return; }
   if(calPop) closeCalPop();
+  if(view&&view.querySelector('.st-sheet')&&view.contains(t)){
+    if(act==='st-close'){ return dismissSheet(view,view.querySelector('.sheet')); }
+    if(act==='st-cal'){ const id=t.closest('[data-cal]').dataset.cal; state.hidden.has(id)?state.hidden.delete(id):state.hidden.add(id); renderCals(); render(true); return renderSettings(); }
+    if(act==='st-add'){ const r=$('#stNewRow'); r.hidden=false; $('#stNewName').focus(); return; }
+    if(act==='st-shared-add'){ const r=$('#stShRow'); r.hidden=false; $('#stShName').focus(); return; }
+    if(act==='v-bg'&&t===view) return dismissSheet(view,view.querySelector('.sheet'));
+    return;
+  }
   if(view&&view.contains(t)) return handleViewClick(t,act);
   if(view&&!t.closest('[data-ev]')) closeView();
   if(modal&&modal.contains(t)){
+    if(act&&act.startsWith('m2-')) return m2Click(t,act);
     if(act==='close-bg'&&t===modal){ if(mode()==='mobile') return dismissSheet(modal,modal.querySelector('.sheet')); return closeModal(); }
     if(act==='close') return closeModal();
     if(act==='delete'){ events=events.filter(e=>e.id!==draft.id); save(); closeModal(); render(true); return toast('Событие удалено'); }
@@ -1117,10 +1335,10 @@ document.addEventListener('click',ev=>{
     if(act==='add-reminder'){ readReminders(); draft.reminders.push({ch:'Пуш',off:10}); renderReminders(); return; }
     if(act==='rm-reminder'){ readReminders(); draft.reminders.splice(+t.closest('[data-i]').dataset.i,1); renderReminders(); return; }
     if(act==='busy'){ busyCheck(); return; }
-    if(!t.closest('.swatches,#colorChip')) modal.querySelector('#swatches').classList.add('hidden');
+    if(!t.closest('.swatches,#colorChip')) modal.querySelector('#swatches')?.classList.add('hidden');
     return;
   }
-  if(!t.closest('#viewMenu,#viewBtn,#bellPop,[data-act="bell"]')) closePopovers();
+  if(!t.closest('#viewMenu,#viewBtn,#bellPop,[data-act="bell"],[data-act="settings"]')) closePopovers();
   if(act==='create'){ toggleSidebar(false); return openModal(state.view==='month'?{date:key(mode()==='mobile'?state.sel:sameDay(state.cursor,TODAY)?TODAY:state.cursor)}:{date:key(state.view==='day'||state.view==='three'?state.cursor:TODAY)}); }
   if(act==='mini-toggle'){ const b=t.closest('[data-act]'); const on=b.getAttribute('aria-expanded')!=='false'; b.setAttribute('aria-expanded',!on); $('#miniGrid').classList.toggle('hidden',on); return; }
   if(act==='grp-toggle'){ const b=t.closest('[data-act]'); const g=document.getElementById(b.dataset.grp); const body=g.querySelector('.grp-body'); const open=b.getAttribute('aria-expanded')!=='false'; b.setAttribute('aria-expanded',!open); b.setAttribute('aria-label',open?'Развернуть список':'Свернуть список'); body.classList.toggle('collapsed',open); return; }
@@ -1132,14 +1350,15 @@ document.addEventListener('click',ev=>{
   if(act==='next') return shift(1);
   if(act==='today'){ return goto(TODAY); }
   if(act==='view-menu'){ $('#viewMenu').classList.toggle('hidden'); return; }
-  if(act==='bell') return bell(t.closest('[data-act]'));
+  if(act==='bell'){ return bell(t.closest('[data-act]')); }
+  if(act==='settings'){ return openSettings(); }
   if(act==='mini-prev'||act==='mini-next'){ state.mini=new Date(state.mini.getFullYear(),state.mini.getMonth()+(act==='mini-next'?1:-1),1); return renderMini(); }
   if(act==='scrim') return toggleSidebar(false);
   const v=t.closest('[data-view]'); if(v){ state.view=v.dataset.view; closePopovers(); if(state.view==='month') state.sel=new Date(state.cursor); return render(); }
   const evb=t.closest('[data-ev]'); if(evb){ ev.stopPropagation(); if(viewCtx&&view&&viewCtx.anchor===evb) return closeView(); return openView(evb.dataset.ev,evb.dataset.date,evb); }
   const gd=t.closest('[data-goto-day]'); if(gd) return goto(parseKey(gd.dataset.gotoDay),'day');
   const mini=t.closest('[data-mini]'); if(mini){ toggleSidebar(false); return goto(parseKey(mini.dataset.mini)); }
-  const pick=t.closest('[data-pick]'); if(pick){ const d=parseKey(pick.dataset.pick); state.sel=d; if(d.getMonth()!==state.cursor.getMonth()) state.cursor=new Date(d.getFullYear(),d.getMonth(),1); return render(); }
+  const pick=t.closest('[data-pick]'); if(pick){ const d=parseKey(pick.dataset.pick); state.sel=d; if(mode()==='mobile'&&state.view==='month'){ state.cursor=d; state.view='day'; state.mmExp=false; return render(); } if(d.getMonth()!==state.cursor.getMonth()) state.cursor=new Date(d.getFullYear(),d.getMonth(),1); return render(); }
   const strip=t.closest('[data-strip]'); if(strip) return goto(parseKey(strip.dataset.strip));
   const cell=t.closest('[data-cell]'); if(cell) return goto(parseKey(cell.dataset.cell),'day');
   const col=t.closest('[data-col]');
