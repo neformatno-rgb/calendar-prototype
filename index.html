@@ -540,6 +540,8 @@ body.no-now .now,body.no-now .now-label{display:none!important}
 .sel-btn{font-size:15px}
 .sp .tp-o{gap:16px}
 .sp .tp-o .i{width:14px;height:14px;color:var(--brand);flex:none}
+.cal-pop .mi-ico{display:flex;align-items:center;gap:8px}
+.cal-pop .mi-ico .i{width:14px;height:14px;color:var(--text-2)}
 </style>
 </head>
 <body>
@@ -694,7 +696,7 @@ let CALS=[{id:'work',name:'Рабочий'},{id:'personal',name:'Личный'}]
 try{ const c=JSON.parse(localStorage.getItem('calendar-proto-cals')); if(Array.isArray(c)&&c.length) CALS=c; }catch(e){}
 for(const c of CALS) if(!COLORS[c.id]) COLORS[c.id]='#7E8A99';
 const calOf=id=>CALS.find(c=>c.id===id)||{id,name:'Календарь'};
-const calFull=id=>(id==='work'||id==='personal')?calOf(id).name+' календарь':calOf(id).name;
+const calFull=id=>{ const c=calOf(id); return (id==='work'||id==='personal')&&!c.custom?c.name+' календарь':c.name; };
 const saveCals=()=>{ try{ localStorage.setItem('calendar-proto-cals',JSON.stringify(CALS)); localStorage.setItem('calendar-proto-colors',JSON.stringify(COLORS)); }catch(e){} };
 const applyCalColors=()=>{ for(const [k,v] of Object.entries(COLORS)) document.documentElement.style.setProperty('--'+k,v) };
 applyCalColors();
@@ -1395,8 +1397,8 @@ function openCalPop(anchor,cal,kind){
   closeCalPop(); const el=document.createElement('div'); el.className='cal-pop'; el.setAttribute('role','dialog');
   const sw=`<div class="sw">${SWATCHES.map(c=>`<button type="button" style="--c:${c}" data-calset="${cal}" data-color="${c}" aria-label="Цвет ${c}" aria-pressed="${COLORS[cal].toLowerCase()===c.toLowerCase()}"></button>`).join('')}</div>`;
   el.innerHTML= kind==='menu'
-    ? `<button class="mi" data-only="${cal}">Показать только этот</button><button class="mi" data-showall="1">Показать все</button><div class="sep2"></div><h4>Цвет календаря</h4>${sw}`
-    : `<h4>Цвет календаря</h4>${sw}`;
+    ? `<button class="mi mi-ico" data-rename="${cal}"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3.5l2 2L6 12H4v-2l6.5-6.5z"/></svg>Переименовать</button><button class="mi" data-only="${cal}">Показать только этот</button><button class="mi" data-showall="1">Показать все</button><div class="sep2"></div><h4>Цвет календаря</h4>${sw}`
+    : `<button class="mi mi-ico" data-rename="${cal}"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><path d="M10.5 3.5l2 2L6 12H4v-2l6.5-6.5z"/></svg>Переименовать</button><div class="sep2"></div><h4>Цвет календаря</h4>${sw}`;
   document.body.appendChild(el); calPop=el;
   const r=anchor.getBoundingClientRect(); const w=el.offsetWidth, h=el.offsetHeight;
   let x=kind==='menu'? r.right-w : r.left-8; let y=r.bottom+6;
@@ -1406,6 +1408,9 @@ function openCalPop(anchor,cal,kind){
   el.querySelector('button').focus({preventScroll:true});
 }
 function calPopClick(t){
+  const rn=t.closest('[data-rename]'); if(rn){ const id=rn.dataset.rename; calPop.innerHTML=`<h4>Название календаря</h4><input class="np" id="renCal" value="${esc(calFull(id))}" autocomplete="off" aria-label="Название календаря"><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-brand" data-renok="${id}">Сохранить</button><button class="btn btn-normal" data-rencancel="1">Отмена</button></div>`; calPop.style.width='240px'; const i=calPop.querySelector('#renCal'); i.focus(); i.select(); i.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); renameCal(id,i.value); } }); return; }
+  const ro=t.closest('[data-renok]'); if(ro) return renameCal(ro.dataset.renok,calPop.querySelector('#renCal').value);
+  if(t.closest('[data-rencancel]')) return closeCalPop();
   const nc=t.closest('[data-newcal]'); if(nc){ if(nc.dataset.newcal==='ok') createCal(); else closeCalPop(); return; }
   const c=t.closest('[data-calset]');
   if(c){ COLORS[c.dataset.calset]=c.dataset.color; try{localStorage.setItem('calendar-proto-colors',JSON.stringify(COLORS))}catch(e){} applyCalColors(); closeCalPop(); render(true); return toast('Цвет календаря изменён'); }
@@ -1414,6 +1419,7 @@ function calPopClick(t){
   if(t.closest('[data-showall]')){ document.querySelectorAll('[data-cal].cb').forEach(cb=>{cb.checked=true}); state.hidden.clear(); closeCalPop(); return render(true); }
 }
 
+function renameCal(id,name){ name=(name||'').trim(); const i=calPop?.querySelector('#renCal'); if(!name){ i?.focus(); return; } const c=CALS.find(x=>x.id===id); if(!c) return; c.name=name; c.custom=true; saveCals(); closeCalPop(); renderCals(); render(true); if(typeof renderSettings==='function') renderSettings(); toast(`Календарь переименован в «${name}»`); }
 // ---------- horizontal swipe between months (mobile) ----------
 let hs=null, suppressClick=false;
 document.addEventListener('pointerdown',e=>{
