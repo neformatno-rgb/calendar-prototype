@@ -15,7 +15,7 @@
   --line:rgba(0,0,0,.1); --line-strong:rgba(0,0,0,.15);
   --surface:#FFFFFF; --generic:#F2F3F4; --generic-hover:#E8E9EB; --weekend:#F7F8F9;
   --work:#5F99FF; --personal:#FFBE5C;
-  --page:#F4F0F1;
+  --page:#F7F9F8;
   --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --hour:48px;
   color-scheme:light;
@@ -23,10 +23,6 @@
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{font-family:var(--font);color:var(--text);background:var(--page);font-size:13px;line-height:1.35;-webkit-font-smoothing:antialiased;overflow:hidden}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;background:
-  radial-gradient(420px 420px at 6% 92%,rgba(255,25,80,.10),transparent 70%),
-  radial-gradient(360px 360px at 30% 8%,rgba(255,190,92,.10),transparent 70%),
-  radial-gradient(500px 500px at 95% 100%,rgba(255,25,80,.07),transparent 70%)}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:0;padding:0}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
@@ -36,7 +32,10 @@ button{cursor:pointer;background:none;border:0;padding:0}
 .app{position:relative;height:100%;display:grid;grid-template-columns:224px 1fr;gap:16px;padding:12px}
 .sidebar{display:flex;flex-direction:column;gap:16px;min-height:0;overflow:auto;padding:4px 0}
 .main{position:relative;background:var(--surface);border-radius:12px;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03)}
-.side-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 4px}
+.side-head{display:flex;align-items:center;justify-content:space-between;min-height:48px;margin:0 0 4px}
+.brand{display:flex;align-items:center;gap:8px;min-width:0}
+.brand .logo-mark{flex:none;display:block}
+.brand-name{font-size:15px;font-weight:500;color:#3F4652;white-space:nowrap}
 .logo-svg{display:block;flex:none}
 .plus-btn{width:28px;height:28px;border-radius:8px;border:1px solid rgba(50,50,50,.15);display:grid;place-items:center;background:var(--surface);transition:background .15s}
 .plus-btn:hover{background:var(--generic)}
@@ -54,7 +53,10 @@ svg.i20{width:20px;height:20px}
 
 /* mini calendar */
 .mini-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px}
-.mini-title{font-size:15px;font-weight:500;color:var(--text)}
+.mini-title{display:inline-flex;align-items:center;gap:6px;font-size:15px;font-weight:500;color:var(--text);padding:2px 4px;margin-left:-4px;border-radius:6px}
+.mini-title:hover{background:var(--generic-hover)}
+.mini-title svg{transition:transform .15s}
+.mini-title[aria-expanded="false"] svg{transform:rotate(-90deg)}
 .mini-grid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px;margin-top:18px}
 .mini-grid span{font-size:11px;color:var(--text-2);text-align:center;padding:4px 0}
 .mini-day{width:24px;height:24px;justify-self:center;display:grid;place-items:center;padding:0;font-size:11px;line-height:1;font-weight:400;border-radius:50%;color:var(--text)}
@@ -67,7 +69,17 @@ svg.i20{width:20px;height:20px}
 .field input{border:0;outline:0;background:none;flex:1;min-width:0;font-size:13px}
 .field input::placeholder{color:var(--hint)}
 .field:focus-within{border-color:rgba(0,0,0,.35)}
-.cal-group h3{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:15px;font-weight:500}
+.grp-head{display:flex;align-items:center;gap:8px;margin:0 0 6px}
+.grp-title{flex:1;font-size:15px;font-weight:500;color:var(--text)}
+.grp-add,.grp-toggle{width:20px;height:20px;display:grid;place-items:center;border-radius:4px;color:var(--text)}
+.grp-add:hover,.grp-toggle:hover{background:var(--generic-hover)}
+.grp-toggle svg{transition:transform .15s}
+.grp-toggle[aria-expanded="false"] svg{transform:rotate(180deg)}
+.grp-body.collapsed{display:none}
+.sidebar .field{height:36px;border-radius:8px}
+.side-foot{margin-top:auto;padding-top:8px;display:flex;justify-content:flex-end}
+.cal-pop input.np{width:100%;height:32px;border:1px solid var(--line-strong);border-radius:6px;padding:0 8px;font-size:13px;outline:0}
+.cal-pop input.np:focus{border-color:rgba(0,0,0,.35)}
 .cal-item{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:13px;cursor:pointer;border-radius:6px}
 .cal-item:hover{background:rgba(0,0,0,.03)}
 .cb{appearance:none;width:16px;height:16px;border-radius:4px;border:1px solid var(--line-strong);margin:0;display:grid;place-items:center;background:var(--surface);cursor:pointer;flex:none}
@@ -77,10 +89,8 @@ svg.i20{width:20px;height:20px}
 .cal-name{flex:1;min-width:0;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cal-dot{cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
 .cal-dot:hover{transform:scale(1.15);box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,rgba(0,0,0,.06))}
-.cal-kebab{width:20px;height:20px;display:grid;place-items:center;border-radius:4px;color:var(--text-2);opacity:0;transition:opacity .12s ease}
-.cal-item:hover .cal-kebab,.cal-kebab:focus-visible,.cal-kebab[aria-expanded="true"]{opacity:1}
+.cal-kebab{width:20px;height:20px;display:grid;place-items:center;border-radius:4px;color:var(--text-2)}
 .cal-kebab:hover{background:rgba(0,0,0,.06);color:var(--text)}
-@media (hover:none){.cal-kebab{opacity:1}}
 .cal-pop{position:fixed;z-index:60;background:var(--surface);border-radius:10px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04);animation:fade .12s ease-out;font-size:13px}
 .cal-pop h4{margin:0 0 8px;font-size:12px;font-weight:500;color:var(--text-2)}
 .cal-pop .sw{display:grid;grid-template-columns:repeat(4,24px);gap:8px}
@@ -103,7 +113,7 @@ svg.i20{width:20px;height:20px}
 .period h1{margin:0;font-size:17px;font-weight:500;min-width:0;text-wrap:balance}
 .tools{display:flex;align-items:center;gap:8px;position:relative}
 .view{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;padding:0 12px 12px}
-.appbar,.m-header,.tabbar,.week-strip{display:none}
+.appbar,.m-header,.tabbar,.week-strip,.m-search{display:none}
 .fab{display:none;position:absolute;right:16px;bottom:84px;width:56px;height:56px;border-radius:50%;background:var(--brand);color:#fff;place-items:center;box-shadow:0 6px 16px rgba(255,25,80,.35);z-index:20;transition:transform .15s}
 .fab:hover{background:var(--brand-hover)}
 .fab:active{transform:scale(.94)}
@@ -156,7 +166,7 @@ svg.i20{width:20px;height:20px}
 .m-cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px;display:flex;flex-direction:column;gap:2px;min-height:0;overflow:hidden;cursor:pointer}
 .m-cell:hover{background:rgba(0,0,0,.015)}
 .m-cell.weekend{background:var(--weekend)}
-.m-num{align-self:center;width:24px;height:24px;border-radius:12px;display:grid;place-items:center;font-size:12px;font-weight:500;flex:none}
+.m-num{align-self:flex-start;margin-left:2px;width:24px;height:24px;border-radius:12px;display:grid;place-items:center;font-size:12px;font-weight:500;flex:none}
 .m-cell.other .m-num{color:var(--hint)}
 .m-cell.today .m-num{background:var(--brand);color:#fff}
 .chip{display:flex;align-items:center;gap:4px;width:100%;padding:1px 6px;border-radius:4px;font-size:11px;line-height:16px;text-align:left;min-width:0;flex:none}
@@ -215,7 +225,7 @@ svg.i20{width:20px;height:20px}
 .hint-line{font-size:12px;color:var(--text-2);margin-top:4px}
 
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:70;animation:fade .2s}
-.pop{position:absolute;right:0;top:36px;width:260px;background:var(--surface);border-radius:10px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04);z-index:40;font-size:13px}
+.pop{position:fixed;width:260px;background:var(--surface);border-radius:10px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04);z-index:40;font-size:13px}
 .pop h4{margin:0 0 6px;font-size:13px;font-weight:600}
 
 
@@ -241,7 +251,9 @@ svg.i20{width:20px;height:20px}
   .sidebar{position:fixed;z-index:45;left:0;top:0;bottom:0;width:272px;background:var(--surface);padding:16px;box-shadow:8px 0 32px rgba(0,0,0,.12);transform:translateX(-105%);transition:transform .2s ease-out}
   .sidebar.open{transform:none}
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:44}
-  .sidebar .side-head .plus-btn{display:none}
+  .topbar{display:none}
+  .app-search{width:248px}
+  .side-foot{display:none}
   .appbar .plus-btn{width:32px;height:32px}
 }
 /* ---------- mobile ---------- */
@@ -254,7 +266,14 @@ svg.i20{width:20px;height:20px}
   .main{border-radius:0;box-shadow:none;background:var(--generic)}
   .m-header{display:flex;align-items:center;gap:12px;padding:16px 16px 8px 20px}
   .m-header h1{margin:0;font-size:22px;font-weight:500;flex:1}
-  .m-header [data-act="create"]{display:none}
+  .m-header{gap:4px}
+  .m-header .icon-btn{color:var(--text)}
+  .m-header.searching h1{display:none}
+  .m-header.searching .m-search{display:flex;flex:1;align-items:center;gap:6px;height:36px;padding:0 10px;border-radius:10px;background:var(--surface);border:1px solid var(--line-strong)}
+  .m-search{min-width:0}
+  .m-header .m-search svg.i{width:16px;height:16px;color:var(--text-2)}
+  .m-search input{border:0;outline:0;background:none;flex:1;min-width:0;font-size:15px}
+  .m-header.searching [data-act="m-search"]{color:var(--brand)}
   .m-sheet{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--surface);border-radius:24px 24px 0 0;overflow:hidden;padding-top:12px}
   .m-sheet-month{padding-top:16px}
   .wk,.m-days{display:grid;padding:4px 8px 12px}
@@ -395,30 +414,31 @@ svg.i20{width:20px;height:20px}
   <!-- tablet app bar -->
   <div class="appbar">
     <button class="icon-btn outlined" id="menuBtn" aria-label="Открыть меню" style="width:32px;height:32px"><svg class="i" viewBox="0 0 16 16"><path d="M3 4.5h10M3 8h10M3 11.5h10"/></svg></button>
-    <svg class="logo-svg" width="104" height="48" viewBox="0 0 104 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Calendar"><g transform="translate(1.5 9.5)"><path opacity="0.6" d="M1.05127 14H27.0513L27.6903 21.6678C27.8846 23.9999 26.0442 26 23.7041 26H4.39847C2.05831 26 0.217945 23.9999 0.412285 21.6678L1.05127 14Z" fill="url(#logo-grad-1)"/><path opacity="0.6" d="M1.05127 14H27.0513L28.0792 23.5944C28.3318 25.9513 26.4909 28.0095 24.1205 28.0205L4.01891 28.1133C1.63538 28.1243 -0.228783 26.0615 0.0227649 23.6912L1.05127 14Z" fill="#FF1F55"/><path opacity="0.6" d="M27.0513 14L1.05127 14L0.416678 6.46994C0.220033 4.13656 2.0609 2.13403 4.40255 2.13403L23.7 2.13403C26.0416 2.13403 27.8825 4.13656 27.6859 6.46994L27.0513 14Z" fill="#FF1F55"/><path opacity="0.6" d="M27.0513 14L1.05127 14L0.0282754 4.54259C-0.226821 2.18426 1.61471 0.123318 3.98677 0.112464L24.0793 0.0205217C26.4644 0.00960809 28.3289 2.0751 28.0749 4.44661L27.0513 14Z" fill="#FF1F55"/><text class="logo-day" x="13.55" y="18.9" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="15" fill="white">6</text></g><path d="M48.2592 21.6385H46.5973C46.5334 21.2834 46.4144 20.9709 46.2404 20.701C46.0664 20.4311 45.8533 20.2021 45.6012 20.0138C45.3491 19.8256 45.0668 19.6836 44.7543 19.5877C44.4453 19.4918 44.1168 19.4439 43.7688 19.4439C43.1403 19.4439 42.5774 19.6019 42.0803 19.918C41.5866 20.234 41.196 20.6974 40.9084 21.3082C40.6243 21.919 40.4822 22.6648 40.4822 23.5455C40.4822 24.4332 40.6243 25.1825 40.9084 25.7933C41.196 26.4041 41.5884 26.8658 42.0856 27.1783C42.5827 27.4908 43.142 27.647 43.7635 27.647C44.108 27.647 44.4347 27.6009 44.7436 27.5085C45.0561 27.4126 45.3384 27.2724 45.5906 27.0877C45.8427 26.9031 46.0558 26.6776 46.2298 26.4112C46.4073 26.1413 46.5298 25.8324 46.5973 25.4844L48.2592 25.4897C48.1705 26.0259 47.9982 26.5195 47.7425 26.9705C47.4904 27.418 47.1655 27.805 46.7678 28.1317C46.3736 28.4549 45.9226 28.7053 45.4148 28.8828C44.907 29.0604 44.353 29.1491 43.7528 29.1491C42.8082 29.1491 41.9666 28.9254 41.228 28.478C40.4893 28.027 39.907 27.3825 39.4808 26.5444C39.0582 25.7063 38.8469 24.7067 38.8469 23.5455C38.8469 22.3807 39.06 21.381 39.4862 20.5465C39.9123 19.7085 40.4947 19.0657 41.2333 18.6183C41.9719 18.1673 42.8118 17.9418 43.7528 17.9418C44.3317 17.9418 44.8714 18.0252 45.3722 18.1921C45.8764 18.3555 46.3292 18.5969 46.7305 18.9165C47.1317 19.2326 47.4638 19.6197 47.7266 20.0778C47.9893 20.5323 48.1669 21.0526 48.2592 21.6385ZM52.482 29.1811C51.9635 29.1811 51.4948 29.0852 51.0757 28.8935C50.6567 28.6982 50.3247 28.4158 50.0796 28.0465C49.8382 27.6772 49.7174 27.2244 49.7174 26.6882C49.7174 26.2266 49.8062 25.8466 49.9838 25.5483C50.1613 25.25 50.401 25.0138 50.7029 24.8398C51.0047 24.6658 51.3421 24.5344 51.7149 24.4457C52.0878 24.3569 52.4678 24.2894 52.8548 24.2433C53.3449 24.1864 53.7426 24.1403 54.048 24.1048C54.3534 24.0657 54.5754 24.0036 54.7139 23.9183C54.8524 23.8331 54.9216 23.6946 54.9216 23.5028V23.4656C54.9216 23.0004 54.7902 22.6399 54.5274 22.3842C54.2682 22.1286 53.8811 22.0007 53.3662 22.0007C52.83 22.0007 52.4074 22.1197 52.0985 22.3576C51.7931 22.592 51.5818 22.853 51.4646 23.1406L49.9678 22.7997C50.1453 22.3026 50.4046 21.9013 50.7455 21.5959C51.0899 21.2869 51.4859 21.0632 51.9333 20.9247C52.3808 20.7827 52.8513 20.7116 53.3449 20.7116C53.6716 20.7116 54.0178 20.7507 54.3836 20.8288C54.7529 20.9034 55.0974 21.0419 55.417 21.2443C55.7401 21.4467 56.0047 21.7362 56.2107 22.1126C56.4166 22.4854 56.5196 22.9702 56.5196 23.5668V29H54.9642V27.8814H54.9003C54.7973 28.0874 54.6428 28.2898 54.4369 28.4886C54.2309 28.6875 53.9664 28.8526 53.6432 28.984C53.32 29.1154 52.933 29.1811 52.482 29.1811ZM52.8282 27.9027C53.2686 27.9027 53.645 27.8157 53.9575 27.6417C54.2735 27.4677 54.5132 27.2404 54.6766 26.9599C54.8435 26.6758 54.9269 26.3722 54.9269 26.049V24.9943C54.8701 25.0511 54.76 25.1044 54.5967 25.1541C54.4369 25.2003 54.254 25.2411 54.048 25.2766C53.8421 25.3086 53.6414 25.3388 53.4461 25.3672C53.2508 25.392 53.0874 25.4134 52.9561 25.4311C52.6471 25.4702 52.3648 25.5359 52.1091 25.6282C51.857 25.7205 51.6546 25.8537 51.5019 26.0277C51.3527 26.1982 51.2781 26.4254 51.2781 26.7095C51.2781 27.1037 51.4237 27.402 51.7149 27.6044C52.0061 27.8033 52.3772 27.9027 52.8282 27.9027ZM60.2337 18.0909V29H58.641V18.0909H60.2337ZM65.9026 29.1651C65.0965 29.1651 64.4023 28.9929 63.8199 28.6484C63.241 28.3004 62.7936 27.8121 62.4775 27.1836C62.165 26.5515 62.0088 25.8111 62.0088 24.9624C62.0088 24.1243 62.165 23.3857 62.4775 22.7464C62.7936 22.1072 63.2339 21.6083 63.7986 21.2496C64.3667 20.891 65.0308 20.7116 65.7907 20.7116C66.2524 20.7116 66.6998 20.788 67.1331 20.9407C67.5663 21.0934 67.9552 21.3331 68.2996 21.6598C68.6441 21.9865 68.9158 22.4109 69.1146 22.9329C69.3135 23.4513 69.4129 24.0817 69.4129 24.8239V25.3885H62.909V24.1953H67.8522C67.8522 23.7763 67.767 23.4052 67.5965 23.082C67.426 22.7553 67.1863 22.4979 66.8774 22.3097C66.572 22.1214 66.2133 22.0273 65.8014 22.0273C65.354 22.0273 64.9633 22.1374 64.6295 22.3576C64.2993 22.5742 64.0436 22.8583 63.8625 23.2099C63.6849 23.5579 63.5961 23.9361 63.5961 24.3445V25.2766C63.5961 25.8235 63.692 26.2887 63.8838 26.6722C64.0791 27.0558 64.3508 27.3487 64.6988 27.5511C65.0468 27.75 65.4534 27.8494 65.9186 27.8494C66.2204 27.8494 66.4956 27.8068 66.7442 27.7216C66.9928 27.6328 67.2077 27.5014 67.3888 27.3274C67.5699 27.1534 67.7084 26.9386 67.8042 26.6829L69.3117 26.9545C69.191 27.3984 68.9743 27.7873 68.6618 28.1211C68.3529 28.4513 67.964 28.7088 67.4953 28.8935C67.0301 29.0746 66.4992 29.1651 65.9026 29.1651ZM72.7727 24.142V29H71.18V20.8182H72.7088V22.1499H72.81C72.9982 21.7166 73.293 21.3686 73.6942 21.1058C74.0991 20.843 74.6087 20.7116 75.223 20.7116C75.7805 20.7116 76.2688 20.8288 76.6879 21.0632C77.1069 21.294 77.4318 21.6385 77.6626 22.0966C77.8935 22.5547 78.0089 23.1211 78.0089 23.7958V29H76.4162V23.9876C76.4162 23.3945 76.2617 22.9311 75.9528 22.5973C75.6438 22.2599 75.2195 22.0913 74.6797 22.0913C74.3104 22.0913 73.9819 22.1712 73.6942 22.331C73.4102 22.4908 73.1847 22.7251 73.0178 23.0341C72.8544 23.3395 72.7727 23.7088 72.7727 24.142ZM83.2077 29.1598C82.5472 29.1598 81.9577 28.9911 81.4393 28.6538C80.9244 28.3129 80.5195 27.8281 80.2248 27.1996C79.9336 26.5675 79.788 25.8093 79.788 24.9251C79.788 24.0408 79.9354 23.2844 80.2301 22.6559C80.5284 22.0273 80.9368 21.5462 81.4553 21.2124C81.9737 20.8786 82.5614 20.7116 83.2184 20.7116C83.7262 20.7116 84.1346 20.7969 84.4435 20.9673C84.756 21.1342 84.9975 21.3295 85.168 21.5533C85.342 21.777 85.4769 21.9741 85.5728 22.1445H85.6687V18.0909H87.2614V29H85.706V27.7269H85.5728C85.4769 27.9009 85.3384 28.0998 85.1573 28.3235C84.9798 28.5472 84.7347 28.7425 84.4222 28.9094C84.1097 29.0763 83.7049 29.1598 83.2077 29.1598ZM83.5593 27.8015C84.0174 27.8015 84.4045 27.6808 84.7205 27.4393C85.0401 27.1942 85.2816 26.8551 85.445 26.4219C85.6119 25.9886 85.6953 25.4844 85.6953 24.9091C85.6953 24.3409 85.6136 23.8438 85.4503 23.4176C85.2869 22.9915 85.0472 22.6594 84.7312 22.4215C84.4151 22.1836 84.0245 22.0646 83.5593 22.0646C83.0799 22.0646 82.6804 22.1889 82.3608 22.4375C82.0412 22.6861 81.7997 23.0252 81.6364 23.4549C81.4766 23.8846 81.3967 24.3693 81.3967 24.9091C81.3967 25.456 81.4783 25.9478 81.6417 26.3846C81.805 26.8214 82.0465 27.1676 82.3661 27.4233C82.6893 27.6754 83.087 27.8015 83.5593 27.8015ZM91.9156 29.1811C91.3971 29.1811 90.9284 29.0852 90.5093 28.8935C90.0903 28.6982 89.7583 28.4158 89.5132 28.0465C89.2718 27.6772 89.151 27.2244 89.151 26.6882C89.151 26.2266 89.2398 25.8466 89.4173 25.5483C89.5949 25.25 89.8346 25.0138 90.1365 24.8398C90.4383 24.6658 90.7757 24.5344 91.1485 24.4457C91.5214 24.3569 91.9014 24.2894 92.2884 24.2433C92.7785 24.1864 93.1762 24.1403 93.4816 24.1048C93.787 24.0657 94.009 24.0036 94.1475 23.9183C94.286 23.8331 94.3552 23.6946 94.3552 23.5028V23.4656C94.3552 23.0004 94.2238 22.6399 93.961 22.3842C93.7018 22.1286 93.3147 22.0007 92.7998 22.0007C92.2636 22.0007 91.841 22.1197 91.5321 22.3576C91.2267 22.592 91.0154 22.853 90.8982 23.1406L89.4014 22.7997C89.5789 22.3026 89.8382 21.9013 90.1791 21.5959C90.5235 21.2869 90.9195 21.0632 91.3669 20.9247C91.8144 20.7827 92.2849 20.7116 92.7785 20.7116C93.1052 20.7116 93.4514 20.7507 93.8172 20.8288C94.1865 20.9034 94.531 21.0419 94.8506 21.2443C95.1737 21.4467 95.4383 21.7362 95.6443 22.1126C95.8502 22.4854 95.9532 22.9702 95.9532 23.5668V29H94.3978V27.8814H94.3339C94.2309 28.0874 94.0764 28.2898 93.8705 28.4886C93.6645 28.6875 93.3999 28.8526 93.0768 28.984C92.7536 29.1154 92.3666 29.1811 91.9156 29.1811ZM92.2618 27.9027C92.7021 27.9027 93.0786 27.8157 93.3911 27.6417C93.7071 27.4677 93.9468 27.2404 94.1102 26.9599C94.2771 26.6758 94.3605 26.3722 94.3605 26.049V24.9943C94.3037 25.0511 94.1936 25.1044 94.0303 25.1541C93.8705 25.2003 93.6876 25.2411 93.4816 25.2766C93.2757 25.3086 93.075 25.3388 92.8797 25.3672C92.6844 25.392 92.521 25.4134 92.3896 25.4311C92.0807 25.4702 91.7984 25.5359 91.5427 25.6282C91.2906 25.7205 91.0882 25.8537 90.9355 26.0277C90.7863 26.1982 90.7117 26.4254 90.7117 26.7095C90.7117 27.1037 90.8573 27.402 91.1485 27.6044C91.4397 27.8033 91.8108 27.9027 92.2618 27.9027ZM98.0746 29V20.8182H99.614V22.1179H99.6992C99.8484 21.6776 100.111 21.3313 100.488 21.0792C100.868 20.8235 101.297 20.6957 101.777 20.6957C101.876 20.6957 101.993 20.6992 102.128 20.7063C102.267 20.7134 102.375 20.7223 102.453 20.733V22.2564C102.389 22.2386 102.276 22.2191 102.112 22.1978C101.949 22.1729 101.786 22.1605 101.622 22.1605C101.246 22.1605 100.91 22.2404 100.615 22.4002C100.324 22.5565 100.093 22.7749 99.9229 23.0554C99.7525 23.3324 99.6673 23.6484 99.6673 24.0036V29H98.0746Z" fill="#3F4652"/><defs><linearGradient id="logo-grad-1" x1="14" y1="14" x2="14" y2="26" gradientUnits="userSpaceOnUse"><stop stop-color="#FF1950"/><stop offset="1" stop-color="#FF7394"/></linearGradient></defs></svg>
+    <span class="brand"><svg class="logo-mark" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="14" cy="14" r="14" fill="#FF1950"/><path fill-rule="evenodd" clip-rule="evenodd" d="M13.9996 6.79457C15.5275 6.79457 17.0165 6.93457 18.4483 7.17711C20.1663 7.46812 21.5012 8.82168 21.7467 10.5393C21.909 11.6748 22 12.8429 22 14.0349C22 15.5295 21.8569 16.9863 21.6095 18.3887C21.3141 20.0634 19.9885 21.364 18.3034 21.6407C16.9161 21.8686 15.4761 22 13.9996 22C12.7078 22 11.4439 21.8992 10.2188 21.7214L9.69584 21.6407C8.01086 21.3639 6.68482 20.0634 6.38969 18.3887C6.14256 16.9863 6 15.5294 6 14.0349C6.00001 12.9919 6.06953 11.9674 6.19563 10.9668L6.2533 10.5393C6.49879 8.82173 7.83383 7.46821 9.55166 7.17711C10.9832 6.93459 12.4719 6.7946 13.9996 6.79457ZM13.9996 8.38371C12.5702 8.38374 11.1715 8.51478 9.81977 8.74374C8.7791 8.92012 7.9798 9.73695 7.83311 10.7635C7.68067 11.8305 7.59619 12.9235 7.59618 14.0349C7.59618 15.4287 7.729 16.7934 7.96171 18.1141C8.13906 19.1204 8.93603 19.905 9.95538 20.0726C11.265 20.2876 12.618 20.4108 13.9996 20.4109C15.3811 20.4109 16.7342 20.2876 18.0438 20.0726C19.0633 19.905 19.8599 19.1206 20.0375 18.1141C20.2705 16.7933 20.4038 15.4287 20.4038 14.0349C20.4038 12.9234 20.3193 11.8305 20.1669 10.7635C20.0202 9.73691 19.221 8.92004 18.1802 8.74374C16.8282 8.51475 15.4293 8.38371 13.9996 8.38371Z" fill="white"/><path d="M18.0095 9.97284C18.4503 9.97284 18.8076 10.3286 18.8076 10.7674C18.8076 11.2062 18.4503 11.562 18.0095 11.562H10.0286C9.58787 11.562 9.23055 11.2062 9.23055 10.7674C9.23055 10.3286 9.58787 9.97284 10.0286 9.97284H18.0095Z" fill="white"/><path d="M10.0286 6C10.4694 6 10.8267 6.35574 10.8267 6.79457V8.38371C10.8267 8.82253 10.4694 9.17827 10.0286 9.17827C9.58787 9.17827 9.23055 8.82253 9.23055 8.38371V6.79457C9.23055 6.35574 9.58787 6 10.0286 6Z" fill="white"/><path d="M18.0095 6C18.4503 6 18.8076 6.35574 18.8076 6.79457V8.38371C18.8076 8.82253 18.4503 9.17827 18.0095 9.17827C17.5688 9.17827 17.2115 8.82253 17.2115 8.38371V6.79457C17.2115 6.35574 17.5688 6 18.0095 6Z" fill="white"/></svg><span class="brand-name">Calendar</span></span>
     <div class="spacer"></div>
-    <button class="plus-btn" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M13 8.6V17.4M8.6 13H17.4" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <label class="field app-search" for="searchT"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="searchT" class="search-input" placeholder="Поиск по событиям" autocomplete="off"></label>
+    <button class="icon-btn outlined bell-btn" data-act="bell" aria-label="Уведомления" style="width:32px;height:32px"><svg class="i" viewBox="0 0 16 16"><path d="M4 11V7a4 4 0 018 0v4l1 1.5H3L4 11zM6.5 14h3"/></svg></button>
   </div>
 
   <aside class="sidebar" id="sidebar" aria-label="Боковая панель">
-    <div class="side-head"><svg class="logo-svg" width="104" height="48" viewBox="0 0 104 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Calendar"><g transform="translate(1.5 9.5)"><path opacity="0.6" d="M1.05127 14H27.0513L27.6903 21.6678C27.8846 23.9999 26.0442 26 23.7041 26H4.39847C2.05831 26 0.217945 23.9999 0.412285 21.6678L1.05127 14Z" fill="url(#logo-grad-2)"/><path opacity="0.6" d="M1.05127 14H27.0513L28.0792 23.5944C28.3318 25.9513 26.4909 28.0095 24.1205 28.0205L4.01891 28.1133C1.63538 28.1243 -0.228783 26.0615 0.0227649 23.6912L1.05127 14Z" fill="#FF1F55"/><path opacity="0.6" d="M27.0513 14L1.05127 14L0.416678 6.46994C0.220033 4.13656 2.0609 2.13403 4.40255 2.13403L23.7 2.13403C26.0416 2.13403 27.8825 4.13656 27.6859 6.46994L27.0513 14Z" fill="#FF1F55"/><path opacity="0.6" d="M27.0513 14L1.05127 14L0.0282754 4.54259C-0.226821 2.18426 1.61471 0.123318 3.98677 0.112464L24.0793 0.0205217C26.4644 0.00960809 28.3289 2.0751 28.0749 4.44661L27.0513 14Z" fill="#FF1F55"/><text class="logo-day" x="13.55" y="18.9" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="15" fill="white">6</text></g><path d="M48.2592 21.6385H46.5973C46.5334 21.2834 46.4144 20.9709 46.2404 20.701C46.0664 20.4311 45.8533 20.2021 45.6012 20.0138C45.3491 19.8256 45.0668 19.6836 44.7543 19.5877C44.4453 19.4918 44.1168 19.4439 43.7688 19.4439C43.1403 19.4439 42.5774 19.6019 42.0803 19.918C41.5866 20.234 41.196 20.6974 40.9084 21.3082C40.6243 21.919 40.4822 22.6648 40.4822 23.5455C40.4822 24.4332 40.6243 25.1825 40.9084 25.7933C41.196 26.4041 41.5884 26.8658 42.0856 27.1783C42.5827 27.4908 43.142 27.647 43.7635 27.647C44.108 27.647 44.4347 27.6009 44.7436 27.5085C45.0561 27.4126 45.3384 27.2724 45.5906 27.0877C45.8427 26.9031 46.0558 26.6776 46.2298 26.4112C46.4073 26.1413 46.5298 25.8324 46.5973 25.4844L48.2592 25.4897C48.1705 26.0259 47.9982 26.5195 47.7425 26.9705C47.4904 27.418 47.1655 27.805 46.7678 28.1317C46.3736 28.4549 45.9226 28.7053 45.4148 28.8828C44.907 29.0604 44.353 29.1491 43.7528 29.1491C42.8082 29.1491 41.9666 28.9254 41.228 28.478C40.4893 28.027 39.907 27.3825 39.4808 26.5444C39.0582 25.7063 38.8469 24.7067 38.8469 23.5455C38.8469 22.3807 39.06 21.381 39.4862 20.5465C39.9123 19.7085 40.4947 19.0657 41.2333 18.6183C41.9719 18.1673 42.8118 17.9418 43.7528 17.9418C44.3317 17.9418 44.8714 18.0252 45.3722 18.1921C45.8764 18.3555 46.3292 18.5969 46.7305 18.9165C47.1317 19.2326 47.4638 19.6197 47.7266 20.0778C47.9893 20.5323 48.1669 21.0526 48.2592 21.6385ZM52.482 29.1811C51.9635 29.1811 51.4948 29.0852 51.0757 28.8935C50.6567 28.6982 50.3247 28.4158 50.0796 28.0465C49.8382 27.6772 49.7174 27.2244 49.7174 26.6882C49.7174 26.2266 49.8062 25.8466 49.9838 25.5483C50.1613 25.25 50.401 25.0138 50.7029 24.8398C51.0047 24.6658 51.3421 24.5344 51.7149 24.4457C52.0878 24.3569 52.4678 24.2894 52.8548 24.2433C53.3449 24.1864 53.7426 24.1403 54.048 24.1048C54.3534 24.0657 54.5754 24.0036 54.7139 23.9183C54.8524 23.8331 54.9216 23.6946 54.9216 23.5028V23.4656C54.9216 23.0004 54.7902 22.6399 54.5274 22.3842C54.2682 22.1286 53.8811 22.0007 53.3662 22.0007C52.83 22.0007 52.4074 22.1197 52.0985 22.3576C51.7931 22.592 51.5818 22.853 51.4646 23.1406L49.9678 22.7997C50.1453 22.3026 50.4046 21.9013 50.7455 21.5959C51.0899 21.2869 51.4859 21.0632 51.9333 20.9247C52.3808 20.7827 52.8513 20.7116 53.3449 20.7116C53.6716 20.7116 54.0178 20.7507 54.3836 20.8288C54.7529 20.9034 55.0974 21.0419 55.417 21.2443C55.7401 21.4467 56.0047 21.7362 56.2107 22.1126C56.4166 22.4854 56.5196 22.9702 56.5196 23.5668V29H54.9642V27.8814H54.9003C54.7973 28.0874 54.6428 28.2898 54.4369 28.4886C54.2309 28.6875 53.9664 28.8526 53.6432 28.984C53.32 29.1154 52.933 29.1811 52.482 29.1811ZM52.8282 27.9027C53.2686 27.9027 53.645 27.8157 53.9575 27.6417C54.2735 27.4677 54.5132 27.2404 54.6766 26.9599C54.8435 26.6758 54.9269 26.3722 54.9269 26.049V24.9943C54.8701 25.0511 54.76 25.1044 54.5967 25.1541C54.4369 25.2003 54.254 25.2411 54.048 25.2766C53.8421 25.3086 53.6414 25.3388 53.4461 25.3672C53.2508 25.392 53.0874 25.4134 52.9561 25.4311C52.6471 25.4702 52.3648 25.5359 52.1091 25.6282C51.857 25.7205 51.6546 25.8537 51.5019 26.0277C51.3527 26.1982 51.2781 26.4254 51.2781 26.7095C51.2781 27.1037 51.4237 27.402 51.7149 27.6044C52.0061 27.8033 52.3772 27.9027 52.8282 27.9027ZM60.2337 18.0909V29H58.641V18.0909H60.2337ZM65.9026 29.1651C65.0965 29.1651 64.4023 28.9929 63.8199 28.6484C63.241 28.3004 62.7936 27.8121 62.4775 27.1836C62.165 26.5515 62.0088 25.8111 62.0088 24.9624C62.0088 24.1243 62.165 23.3857 62.4775 22.7464C62.7936 22.1072 63.2339 21.6083 63.7986 21.2496C64.3667 20.891 65.0308 20.7116 65.7907 20.7116C66.2524 20.7116 66.6998 20.788 67.1331 20.9407C67.5663 21.0934 67.9552 21.3331 68.2996 21.6598C68.6441 21.9865 68.9158 22.4109 69.1146 22.9329C69.3135 23.4513 69.4129 24.0817 69.4129 24.8239V25.3885H62.909V24.1953H67.8522C67.8522 23.7763 67.767 23.4052 67.5965 23.082C67.426 22.7553 67.1863 22.4979 66.8774 22.3097C66.572 22.1214 66.2133 22.0273 65.8014 22.0273C65.354 22.0273 64.9633 22.1374 64.6295 22.3576C64.2993 22.5742 64.0436 22.8583 63.8625 23.2099C63.6849 23.5579 63.5961 23.9361 63.5961 24.3445V25.2766C63.5961 25.8235 63.692 26.2887 63.8838 26.6722C64.0791 27.0558 64.3508 27.3487 64.6988 27.5511C65.0468 27.75 65.4534 27.8494 65.9186 27.8494C66.2204 27.8494 66.4956 27.8068 66.7442 27.7216C66.9928 27.6328 67.2077 27.5014 67.3888 27.3274C67.5699 27.1534 67.7084 26.9386 67.8042 26.6829L69.3117 26.9545C69.191 27.3984 68.9743 27.7873 68.6618 28.1211C68.3529 28.4513 67.964 28.7088 67.4953 28.8935C67.0301 29.0746 66.4992 29.1651 65.9026 29.1651ZM72.7727 24.142V29H71.18V20.8182H72.7088V22.1499H72.81C72.9982 21.7166 73.293 21.3686 73.6942 21.1058C74.0991 20.843 74.6087 20.7116 75.223 20.7116C75.7805 20.7116 76.2688 20.8288 76.6879 21.0632C77.1069 21.294 77.4318 21.6385 77.6626 22.0966C77.8935 22.5547 78.0089 23.1211 78.0089 23.7958V29H76.4162V23.9876C76.4162 23.3945 76.2617 22.9311 75.9528 22.5973C75.6438 22.2599 75.2195 22.0913 74.6797 22.0913C74.3104 22.0913 73.9819 22.1712 73.6942 22.331C73.4102 22.4908 73.1847 22.7251 73.0178 23.0341C72.8544 23.3395 72.7727 23.7088 72.7727 24.142ZM83.2077 29.1598C82.5472 29.1598 81.9577 28.9911 81.4393 28.6538C80.9244 28.3129 80.5195 27.8281 80.2248 27.1996C79.9336 26.5675 79.788 25.8093 79.788 24.9251C79.788 24.0408 79.9354 23.2844 80.2301 22.6559C80.5284 22.0273 80.9368 21.5462 81.4553 21.2124C81.9737 20.8786 82.5614 20.7116 83.2184 20.7116C83.7262 20.7116 84.1346 20.7969 84.4435 20.9673C84.756 21.1342 84.9975 21.3295 85.168 21.5533C85.342 21.777 85.4769 21.9741 85.5728 22.1445H85.6687V18.0909H87.2614V29H85.706V27.7269H85.5728C85.4769 27.9009 85.3384 28.0998 85.1573 28.3235C84.9798 28.5472 84.7347 28.7425 84.4222 28.9094C84.1097 29.0763 83.7049 29.1598 83.2077 29.1598ZM83.5593 27.8015C84.0174 27.8015 84.4045 27.6808 84.7205 27.4393C85.0401 27.1942 85.2816 26.8551 85.445 26.4219C85.6119 25.9886 85.6953 25.4844 85.6953 24.9091C85.6953 24.3409 85.6136 23.8438 85.4503 23.4176C85.2869 22.9915 85.0472 22.6594 84.7312 22.4215C84.4151 22.1836 84.0245 22.0646 83.5593 22.0646C83.0799 22.0646 82.6804 22.1889 82.3608 22.4375C82.0412 22.6861 81.7997 23.0252 81.6364 23.4549C81.4766 23.8846 81.3967 24.3693 81.3967 24.9091C81.3967 25.456 81.4783 25.9478 81.6417 26.3846C81.805 26.8214 82.0465 27.1676 82.3661 27.4233C82.6893 27.6754 83.087 27.8015 83.5593 27.8015ZM91.9156 29.1811C91.3971 29.1811 90.9284 29.0852 90.5093 28.8935C90.0903 28.6982 89.7583 28.4158 89.5132 28.0465C89.2718 27.6772 89.151 27.2244 89.151 26.6882C89.151 26.2266 89.2398 25.8466 89.4173 25.5483C89.5949 25.25 89.8346 25.0138 90.1365 24.8398C90.4383 24.6658 90.7757 24.5344 91.1485 24.4457C91.5214 24.3569 91.9014 24.2894 92.2884 24.2433C92.7785 24.1864 93.1762 24.1403 93.4816 24.1048C93.787 24.0657 94.009 24.0036 94.1475 23.9183C94.286 23.8331 94.3552 23.6946 94.3552 23.5028V23.4656C94.3552 23.0004 94.2238 22.6399 93.961 22.3842C93.7018 22.1286 93.3147 22.0007 92.7998 22.0007C92.2636 22.0007 91.841 22.1197 91.5321 22.3576C91.2267 22.592 91.0154 22.853 90.8982 23.1406L89.4014 22.7997C89.5789 22.3026 89.8382 21.9013 90.1791 21.5959C90.5235 21.2869 90.9195 21.0632 91.3669 20.9247C91.8144 20.7827 92.2849 20.7116 92.7785 20.7116C93.1052 20.7116 93.4514 20.7507 93.8172 20.8288C94.1865 20.9034 94.531 21.0419 94.8506 21.2443C95.1737 21.4467 95.4383 21.7362 95.6443 22.1126C95.8502 22.4854 95.9532 22.9702 95.9532 23.5668V29H94.3978V27.8814H94.3339C94.2309 28.0874 94.0764 28.2898 93.8705 28.4886C93.6645 28.6875 93.3999 28.8526 93.0768 28.984C92.7536 29.1154 92.3666 29.1811 91.9156 29.1811ZM92.2618 27.9027C92.7021 27.9027 93.0786 27.8157 93.3911 27.6417C93.7071 27.4677 93.9468 27.2404 94.1102 26.9599C94.2771 26.6758 94.3605 26.3722 94.3605 26.049V24.9943C94.3037 25.0511 94.1936 25.1044 94.0303 25.1541C93.8705 25.2003 93.6876 25.2411 93.4816 25.2766C93.2757 25.3086 93.075 25.3388 92.8797 25.3672C92.6844 25.392 92.521 25.4134 92.3896 25.4311C92.0807 25.4702 91.7984 25.5359 91.5427 25.6282C91.2906 25.7205 91.0882 25.8537 90.9355 26.0277C90.7863 26.1982 90.7117 26.4254 90.7117 26.7095C90.7117 27.1037 90.8573 27.402 91.1485 27.6044C91.4397 27.8033 91.8108 27.9027 92.2618 27.9027ZM98.0746 29V20.8182H99.614V22.1179H99.6992C99.8484 21.6776 100.111 21.3313 100.488 21.0792C100.868 20.8235 101.297 20.6957 101.777 20.6957C101.876 20.6957 101.993 20.6992 102.128 20.7063C102.267 20.7134 102.375 20.7223 102.453 20.733V22.2564C102.389 22.2386 102.276 22.2191 102.112 22.1978C101.949 22.1729 101.786 22.1605 101.622 22.1605C101.246 22.1605 100.91 22.2404 100.615 22.4002C100.324 22.5565 100.093 22.7749 99.9229 23.0554C99.7525 23.3324 99.6673 23.6484 99.6673 24.0036V29H98.0746Z" fill="#3F4652"/><defs><linearGradient id="logo-grad-2" x1="14" y1="14" x2="14" y2="26" gradientUnits="userSpaceOnUse"><stop stop-color="#FF1950"/><stop offset="1" stop-color="#FF7394"/></linearGradient></defs></svg><button class="plus-btn" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M13 8.6V17.4M8.6 13H17.4" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+    <div class="side-head"><span class="brand"><svg class="logo-mark" width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><circle cx="14" cy="14" r="14" fill="#FF1950"/><path fill-rule="evenodd" clip-rule="evenodd" d="M13.9996 6.79457C15.5275 6.79457 17.0165 6.93457 18.4483 7.17711C20.1663 7.46812 21.5012 8.82168 21.7467 10.5393C21.909 11.6748 22 12.8429 22 14.0349C22 15.5295 21.8569 16.9863 21.6095 18.3887C21.3141 20.0634 19.9885 21.364 18.3034 21.6407C16.9161 21.8686 15.4761 22 13.9996 22C12.7078 22 11.4439 21.8992 10.2188 21.7214L9.69584 21.6407C8.01086 21.3639 6.68482 20.0634 6.38969 18.3887C6.14256 16.9863 6 15.5294 6 14.0349C6.00001 12.9919 6.06953 11.9674 6.19563 10.9668L6.2533 10.5393C6.49879 8.82173 7.83383 7.46821 9.55166 7.17711C10.9832 6.93459 12.4719 6.7946 13.9996 6.79457ZM13.9996 8.38371C12.5702 8.38374 11.1715 8.51478 9.81977 8.74374C8.7791 8.92012 7.9798 9.73695 7.83311 10.7635C7.68067 11.8305 7.59619 12.9235 7.59618 14.0349C7.59618 15.4287 7.729 16.7934 7.96171 18.1141C8.13906 19.1204 8.93603 19.905 9.95538 20.0726C11.265 20.2876 12.618 20.4108 13.9996 20.4109C15.3811 20.4109 16.7342 20.2876 18.0438 20.0726C19.0633 19.905 19.8599 19.1206 20.0375 18.1141C20.2705 16.7933 20.4038 15.4287 20.4038 14.0349C20.4038 12.9234 20.3193 11.8305 20.1669 10.7635C20.0202 9.73691 19.221 8.92004 18.1802 8.74374C16.8282 8.51475 15.4293 8.38371 13.9996 8.38371Z" fill="white"/><path d="M18.0095 9.97284C18.4503 9.97284 18.8076 10.3286 18.8076 10.7674C18.8076 11.2062 18.4503 11.562 18.0095 11.562H10.0286C9.58787 11.562 9.23055 11.2062 9.23055 10.7674C9.23055 10.3286 9.58787 9.97284 10.0286 9.97284H18.0095Z" fill="white"/><path d="M10.0286 6C10.4694 6 10.8267 6.35574 10.8267 6.79457V8.38371C10.8267 8.82253 10.4694 9.17827 10.0286 9.17827C9.58787 9.17827 9.23055 8.82253 9.23055 8.38371V6.79457C9.23055 6.35574 9.58787 6 10.0286 6Z" fill="white"/><path d="M18.0095 6C18.4503 6 18.8076 6.35574 18.8076 6.79457V8.38371C18.8076 8.82253 18.4503 9.17827 18.0095 9.17827C17.5688 9.17827 17.2115 8.82253 17.2115 8.38371V6.79457C17.2115 6.35574 17.5688 6 18.0095 6Z" fill="white"/></svg><span class="brand-name">Calendar</span></span><button class="plus-btn" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M13 8.6V17.4M8.6 13H17.4" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     <div>
       <div class="mini-head">
-        <span class="mini-title" id="miniTitle"></span>
+        <button class="mini-title" data-act="mini-toggle" aria-expanded="true"><span id="miniTitle"></span><svg class="i" viewBox="0 0 16 16"><path d="M4.5 6.5L8 10l3.5-3.5"/></svg></button>
         <span><button class="icon-btn" data-act="mini-prev" aria-label="Предыдущий месяц"><svg class="i" viewBox="0 0 16 16"><path d="M10 3.5L5.5 8l4.5 4.5"/></svg></button><button class="icon-btn" data-act="mini-next" aria-label="Следующий месяц"><svg class="i" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button></span>
       </div>
       <div class="mini-grid" id="miniGrid"></div>
     </div>
     <label class="field" for="peopleInput"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="peopleInput" placeholder="Добавить людей" autocomplete="off"></label>
-    <div class="cal-group">
-      <h3>Мои календари</h3>
-      <div class="cal-item"><input type="checkbox" class="cb" id="cal-work" data-cal="work" checked><button type="button" class="dot cal-dot" style="background:var(--work)" data-act="cal-color" data-cal="work" aria-label="Цвет календаря «Рабочий календарь»" title="Изменить цвет"></button><label for="cal-work" class="cal-name">Рабочий календарь</label><button type="button" class="cal-kebab" data-act="cal-menu" data-cal="work" aria-label="Действия с календарём «Рабочий календарь»" title="Ещё"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>
-      <div class="cal-item"><input type="checkbox" class="cb" id="cal-personal" data-cal="personal" checked><button type="button" class="dot cal-dot" style="background:var(--personal)" data-act="cal-color" data-cal="personal" aria-label="Цвет календаря «Личный календарь»" title="Изменить цвет"></button><label for="cal-personal" class="cal-name">Личный календарь</label><button type="button" class="cal-kebab" data-act="cal-menu" data-cal="personal" aria-label="Действия с календарём «Личный календарь»" title="Ещё"><svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>
+    <div class="cal-group" id="grpMy">
+      <div class="grp-head"><button class="grp-add" data-act="cal-new" aria-label="Создать календарь" title="Создать календарь"><svg class="i" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg></button><span class="grp-title">Мои календари</span><button class="grp-toggle" data-act="grp-toggle" data-grp="grpMy" aria-expanded="true" aria-label="Свернуть список"><svg class="i" viewBox="0 0 16 16"><path d="M4.5 10L8 6.5l3.5 3.5"/></svg></button></div>
+      <div class="grp-body" id="calList"></div>
     </div>
-    <div class="cal-group">
-      <h3>Общие календари</h3>
-      <div id="sharedList"><div class="muted" style="font-size:12px;padding:2px">Введите имя в поле «Добавить людей» и нажмите Enter</div></div>
+    <div class="cal-group" id="grpShared">
+      <div class="grp-head"><button class="grp-add" data-act="shared-add" aria-label="Добавить общий календарь" title="Добавить человека"><svg class="i" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg></button><span class="grp-title">Общие календари</span><button class="grp-toggle" data-act="grp-toggle" data-grp="grpShared" aria-expanded="true" aria-label="Свернуть список"><svg class="i" viewBox="0 0 16 16"><path d="M4.5 10L8 6.5l3.5 3.5"/></svg></button></div>
+      <div class="grp-body" id="sharedList"></div>
     </div>
+    <div class="side-foot"><button class="plus-btn collapse-btn side-collapse" data-act="toggle-side" aria-label="Скрыть боковое меню" title="Скрыть боковое меню"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M7 13H19M10 10L7 13L10 16" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
   </aside>
 
   <main class="main">
@@ -426,13 +446,10 @@ svg.i20{width:20px;height:20px}
       <div class="top-left">
       <button class="plus-btn top-plus" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M13 8.6V17.4M8.6 13H17.4" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="plus-btn collapse-btn" data-act="toggle-side" aria-label="Скрыть боковое меню" title="Скрыть боковое меню"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M7 13H19M10 10L7 13L10 16" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <label class="field" for="search"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="search" placeholder="Поиск по событиям" autocomplete="off"></label>
+      <label class="field" for="search"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="search" class="search-input" placeholder="Поиск по событиям" autocomplete="off"></label>
       </div>
       <div class="top-right" style="position:relative">
-        <button class="icon-btn outlined" data-act="bell" aria-label="Уведомления"><svg class="i" viewBox="0 0 16 16"><path d="M4 11V7a4 4 0 018 0v4l1 1.5H3L4 11zM6.5 14h3"/></svg></button>
-        <div class="sep"></div>
-        <div class="avatar" aria-label="Профиль">АК</div>
-        <div class="pop hidden" id="bellPop"></div>
+        <button class="icon-btn outlined bell-btn" data-act="bell" aria-label="Уведомления"><svg class="i" viewBox="0 0 16 16"><path d="M4 11V7a4 4 0 018 0v4l1 1.5H3L4 11zM6.5 14h3"/></svg></button>
       </div>
     </div>
     <div class="toolbar">
@@ -453,7 +470,9 @@ svg.i20{width:20px;height:20px}
     </div>
     <div class="m-header">
       <h1 id="mTitle"></h1>
-      <button class="icon-btn" data-act="create" aria-label="Создать событие"><svg class="i" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg></button>
+      <label class="m-search" for="searchM"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="searchM" class="search-input" placeholder="Поиск по событиям" autocomplete="off"></label>
+      <button class="icon-btn" data-act="m-search" aria-label="Поиск"><svg class="i" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5"/><path d="M13.2 13.2l3.3 3.3"/></svg></button>
+      <button class="icon-btn bell-btn" data-act="bell" aria-label="Уведомления"><svg class="i" viewBox="0 0 20 20"><path d="M5.5 13.5V9a4.5 4.5 0 019 0v4.5l1.25 1.75H4.25L5.5 13.5zM8.25 17.25h3.5"/></svg></button>
     </div>
     <div class="view" id="view"></div>
     <button class="fab" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -462,6 +481,7 @@ svg.i20{width:20px;height:20px}
       <button role="tab" data-view="three"><svg class="i" viewBox="0 0 20 20"><rect x="2.75" y="3.75" width="14.5" height="13.5" rx="2.5"/><path d="M2.75 7.75h14.5M7.5 10.5v4M10 10.5v4M12.5 10.5v4"/></svg>3 дня</button>
       <button role="tab" data-view="month"><svg class="i" viewBox="0 0 20 20"><rect x="2.75" y="3.75" width="14.5" height="13.5" rx="2.5"/><path d="M2.75 7.75h14.5"/><circle cx="6.5" cy="11" r=".9" fill="currentColor"/><circle cx="10" cy="11" r=".9" fill="currentColor"/><circle cx="13.5" cy="11" r=".9" fill="currentColor"/><circle cx="6.5" cy="14" r=".9" fill="currentColor"/><circle cx="10" cy="14" r=".9" fill="currentColor"/></svg>Месяц</button></nav>
   </main>
+  <div class="pop hidden" id="bellPop" role="dialog" aria-label="Уведомления"></div>
 </div>
 
 <template id="modalTpl">
@@ -536,6 +556,12 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 // ---------- data ----------
 const COLORS={work:'#5F99FF',personal:'#FFBE5C'};
 try{ Object.assign(COLORS, JSON.parse(localStorage.getItem('calendar-proto-colors'))||{}) }catch(e){}
+let CALS=[{id:'work',name:'Рабочий'},{id:'personal',name:'Личный'}];
+try{ const c=JSON.parse(localStorage.getItem('calendar-proto-cals')); if(Array.isArray(c)&&c.length) CALS=c; }catch(e){}
+for(const c of CALS) if(!COLORS[c.id]) COLORS[c.id]='#7E8A99';
+const calOf=id=>CALS.find(c=>c.id===id)||{id,name:'Календарь'};
+const calFull=id=>(id==='work'||id==='personal')?calOf(id).name+' календарь':calOf(id).name;
+const saveCals=()=>{ try{ localStorage.setItem('calendar-proto-cals',JSON.stringify(CALS)); localStorage.setItem('calendar-proto-colors',JSON.stringify(COLORS)); }catch(e){} };
 const applyCalColors=()=>{ for(const [k,v] of Object.entries(COLORS)) document.documentElement.style.setProperty('--'+k,v) };
 applyCalColors();
 const SWATCHES=['#5F99FF','#8F52CC','#30AA6E','#FFBE5C','#FF7A33','#E5343A','#FF1950','#7E8A99'];
@@ -731,7 +757,7 @@ function openModal(opts={}){
   q('#evStart').value=draft.start||'12:00'; q('#evEnd').value=draft.end||'13:00';
   q('#evAllDay').checked=draft.allDay; q('#evRepeat').value=draft.repeat;
   q('#evGuests').value=draft.guests; q('#evPlace').value=draft.place; q('#evLink').value=draft.link; q('#evDesc').value=draft.desc;
-  q('#evCal').value=draft.cal;
+  q('#evCal').innerHTML=CALS.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''); q('#evCal').value=draft.cal;
   q('#delBtn').classList.toggle('hidden',!editing);
   q('#seriesHint').classList.toggle('hidden',!(editing&&editing.repeat!=='none'));
   q('#swatches').innerHTML=SWATCHES.map(c=>`<button type="button" style="--c:${c}" data-swatch="${c}" aria-label="Цвет ${c}"></button>`).join('')+`<button type="button" style="--c:#fff;box-shadow:inset 0 0 0 1px var(--line-strong)" data-swatch="" aria-label="Цвет календаря" title="Как у календаря"></button>`;
@@ -819,7 +845,7 @@ function viewHTML(e,dk){
   const yes=me==='yes'?1:0;
   const offL=Object.fromEntries(OFFS);
   const rem=(e.reminders||[]).map(r=>`${offL[r.off]?offL[r.off].replace(/^з/,'З'):r.off+' мин.'}, ${r.ch.toLowerCase()}`).join('<br>');
-  const calName=e.cal==='work'?'Рабочий календарь':'Личный календарь';
+  const calName=calFull(e.cal);
   return `
   <div class="v-actions">
     <button class="icon-btn" data-act="v-edit" aria-label="Изменить">${ic('pencil')}</button>
@@ -1016,6 +1042,7 @@ function openCalPop(anchor,cal,kind){
   el.querySelector('button').focus({preventScroll:true});
 }
 function calPopClick(t){
+  const nc=t.closest('[data-newcal]'); if(nc){ if(nc.dataset.newcal==='ok') createCal(); else closeCalPop(); return; }
   const c=t.closest('[data-calset]');
   if(c){ COLORS[c.dataset.calset]=c.dataset.color; try{localStorage.setItem('calendar-proto-colors',JSON.stringify(COLORS))}catch(e){} applyCalColors(); closeCalPop(); render(true); return toast('Цвет календаря изменён'); }
   const only=t.closest('[data-only]');
@@ -1056,12 +1083,13 @@ document.addEventListener('pointerup',endHSwipe); document.addEventListener('poi
 document.addEventListener('click',e=>{ if(suppressClick){ e.stopPropagation(); e.preventDefault(); suppressClick=false; } },true);
 // ---------- misc ----------
 let toastT; function toast(msg){ document.querySelector('.toast')?.remove(); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; t.setAttribute('role','status'); document.body.appendChild(t); clearTimeout(toastT); toastT=setTimeout(()=>t.remove(),2200); }
-function bell(){
+function bell(btn){
   const pop=$('#bellPop'); if(!pop.classList.contains('hidden')){pop.classList.add('hidden');return}
   const nowMin=TODAY.getHours()*60+TODAY.getMinutes();
   const next=dayEvents(TODAY).filter(e=>!e.allDay&&toMin(e.start)>=nowMin).slice(0,3);
   pop.innerHTML=`<h4>Сегодня дальше</h4>${next.length?next.map(e=>`<div style="display:flex;gap:8px;align-items:center;padding:4px 0"><span class="dot" style="width:8px;height:8px;background:${colorOf(e)}"></span><span class="tabnum muted">${e.start}</span>${esc(e.title)}</div>`).join(''):'<div class="muted">Больше событий нет</div>'}`;
   pop.classList.remove('hidden');
+  if(btn){ const r=btn.getBoundingClientRect(); const w=pop.offsetWidth; pop.style.left=Math.max(8,Math.min(innerWidth-w-8,r.right-w))+'px'; pop.style.top=(r.bottom+8)+'px'; }
 }
 function toggleSidebar(open){
   const sb=$('#sidebar'); const on=open??!sb.classList.contains('open'); sb.classList.toggle('open',on);
@@ -1094,12 +1122,17 @@ document.addEventListener('click',ev=>{
   }
   if(!t.closest('#viewMenu,#viewBtn,#bellPop,[data-act="bell"]')) closePopovers();
   if(act==='create'){ toggleSidebar(false); return openModal(state.view==='month'?{date:key(mode()==='mobile'?state.sel:sameDay(state.cursor,TODAY)?TODAY:state.cursor)}:{date:key(state.view==='day'||state.view==='three'?state.cursor:TODAY)}); }
+  if(act==='mini-toggle'){ const b=t.closest('[data-act]'); const on=b.getAttribute('aria-expanded')!=='false'; b.setAttribute('aria-expanded',!on); $('#miniGrid').classList.toggle('hidden',on); return; }
+  if(act==='grp-toggle'){ const b=t.closest('[data-act]'); const g=document.getElementById(b.dataset.grp); const body=g.querySelector('.grp-body'); const open=b.getAttribute('aria-expanded')!=='false'; b.setAttribute('aria-expanded',!open); b.setAttribute('aria-label',open?'Развернуть список':'Свернуть список'); body.classList.toggle('collapsed',open); return; }
+  if(act==='shared-add'){ const i=$('#peopleInput'); i.focus(); i.closest('.field').animate?.([{boxShadow:'0 0 0 3px rgba(255,25,80,.25)'},{boxShadow:'0 0 0 0 rgba(255,25,80,0)'}],{duration:700}); return; }
+  if(act==='cal-new'){ return openNewCal(t.closest('[data-act]')); }
+  if(act==='m-search'){ const h=document.querySelector('.m-header'); const on=!h.classList.contains('searching'); h.classList.toggle('searching',on); if(on) $('#searchM').focus(); else { setSearch(''); } return; }
   if(act==='toggle-side'){ const on=!$('#app').classList.contains('collapsed'); setCollapsed(on); return; }
   if(act==='prev') return shift(-1);
   if(act==='next') return shift(1);
   if(act==='today'){ return goto(TODAY); }
   if(act==='view-menu'){ $('#viewMenu').classList.toggle('hidden'); return; }
-  if(act==='bell') return bell();
+  if(act==='bell') return bell(t.closest('[data-act]'));
   if(act==='mini-prev'||act==='mini-next'){ state.mini=new Date(state.mini.getFullYear(),state.mini.getMonth()+(act==='mini-next'?1:-1),1); return renderMini(); }
   if(act==='scrim') return toggleSidebar(false);
   const v=t.closest('[data-view]'); if(v){ state.view=v.dataset.view; closePopovers(); if(state.view==='month') state.sel=new Date(state.cursor); return render(); }
@@ -1117,14 +1150,36 @@ document.addEventListener('keydown',ev=>{
   if(ev.key==='Enter'&&ev.target.dataset?.cell){ goto(parseKey(ev.target.dataset.cell),'day'); }
 });
 $('#menuBtn').addEventListener('click',ev=>{ev.stopPropagation();toggleSidebar(true)});
-$('#search').addEventListener('input',e=>{state.q=e.target.value.trim().toLowerCase(); render(true)});
-document.querySelectorAll('input[data-cal]').forEach(cb=>cb.addEventListener('change',()=>{ cb.checked?state.hidden.delete(cb.dataset.cal):state.hidden.add(cb.dataset.cal); render(true); }));
+function setSearch(v){ document.querySelectorAll('.search-input').forEach(i=>{ if(i.value!==v) i.value=v; }); state.q=v.trim().toLowerCase(); render(true); }
+document.querySelectorAll('.search-input').forEach(i=>i.addEventListener('input',e=>setSearch(e.target.value)));
+document.addEventListener('change',e=>{ const cb=e.target.closest('input[data-cal]'); if(!cb) return; cb.checked?state.hidden.delete(cb.dataset.cal):state.hidden.add(cb.dataset.cal); render(true); });
+const KEBAB='<svg class="i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="3.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.1" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.1" fill="currentColor" stroke="none"/></svg>';
+function renderCals(){
+  $('#calList').innerHTML=CALS.map(c=>{ const n=calFull(c.id); return `<div class="cal-item"><input type="checkbox" class="cb" id="cal-${c.id}" data-cal="${c.id}"${state.hidden.has(c.id)?'':' checked'}><button type="button" class="dot cal-dot" style="background:var(--${c.id})" data-act="cal-color" data-cal="${c.id}" aria-label="Цвет календаря «${esc(n)}»" title="Изменить цвет"></button><label for="cal-${c.id}" class="cal-name">${esc(n)}</label><button type="button" class="cal-kebab" data-act="cal-menu" data-cal="${c.id}" aria-label="Действия с календарём «${esc(n)}»" title="Ещё">${KEBAB}</button></div>`; }).join('');
+}
+function renderShared(){
+  $('#sharedList').innerHTML=state.shared.length?state.shared.map((n,i)=>`<label class="cal-item"><input type="checkbox" class="cb" checked><span class="dot" style="background:${SWATCHES[(i+1)%SWATCHES.length]}"></span><span class="cal-name">${esc(n)}</span></label>`).join(''):'<div class="muted" style="font-size:12px;padding:2px 0 0 28px">Нажмите «+» или введите имя в «Добавить людей»</div>';
+}
+function openNewCal(anchor){
+  closeCalPop(); const el=document.createElement('div'); el.className='cal-pop'; el.setAttribute('role','dialog'); el.style.width='240px';
+  el.innerHTML=`<h4>Новый календарь</h4><input class="np" id="newCalName" placeholder="Название, например «Семья»" autocomplete="off"><div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-brand" data-newcal="ok">Создать</button><button class="btn btn-normal" data-newcal="cancel">Отмена</button></div>`;
+  document.body.appendChild(el); calPop=el; calPop.dataset.for='new';
+  const r=anchor.getBoundingClientRect(); el.style.left=Math.round(Math.min(r.left,innerWidth-248))+'px'; el.style.top=Math.round(r.bottom+6)+'px';
+  const inp=el.querySelector('#newCalName'); inp.focus();
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') createCal(); });
+}
+function createCal(){
+  const name=($('#newCalName')?.value||'').trim(); if(!name){ $('#newCalName')?.focus(); return; }
+  const id='c'+Date.now().toString(36); const used=new Set(Object.values(COLORS).map(c=>c.toLowerCase()));
+  COLORS[id]=SWATCHES.find(c=>!used.has(c.toLowerCase()))||SWATCHES[CALS.length%SWATCHES.length];
+  CALS.push({id,name}); saveCals(); applyCalColors(); closeCalPop(); renderCals(); toast(`Календарь «${name}» создан`);
+}
 $('#peopleInput').addEventListener('keydown',e=>{
   if(e.key!=='Enter'||!e.target.value.trim()) return;
   state.shared.push(e.target.value.trim()); e.target.value='';
-  $('#sharedList').innerHTML=state.shared.map((n,i)=>`<label class="cal-item"><input type="checkbox" class="cb" id="sh-${i}" checked><span class="dot" style="background:${SWATCHES[(i+1)%SWATCHES.length]}"></span>${esc(n)}</label>`).join('');
-  toast('Календарь добавлен в «Общие»');
+  renderShared(); toast('Календарь добавлен в «Общие»');
 });
+renderCals(); renderShared();
 document.addEventListener('scroll',()=>{ if(view&&view.classList.contains('vpop')) closeView(); },true);
 addEventListener('hashchange',()=>{ const v=Object.keys(HASH).find(k=>HASH[k]===location.hash.slice(1)); if(v&&v!==state.view){ state.view=v; render(); } });
 let lastMode=mode(); addEventListener('resize',()=>{ placeView(); const m=mode(); if(m!==lastMode){ lastMode=m; if(m!=='tablet') toggleSidebar(false); render(true); } });
