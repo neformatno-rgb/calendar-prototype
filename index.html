@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendar — прототип</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Gravity UI light tokens, brand from the G01 file. Layout: sidebar + white work card on desktop, drawer on tablet, tab bar on mobile */
+  --brand:#FF1950; --brand-hover:#E8063E; --brand-soft:rgba(255,25,80,.1);
+  --text:rgba(0,0,0,.85); --text-2:rgba(0,0,0,.5); --hint:rgba(0,0,0,.3);
+  --line:rgba(0,0,0,.1); --line-strong:rgba(0,0,0,.15);
+  --surface:#FFFFFF; --generic:#F2F3F4; --generic-hover:#E8E9EB; --weekend:#F7F8F9;
+  --work:#5F99FF; --personal:#FFBE5C;
+  --page:#F4F0F1;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --hour:48px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:var(--font);color:var(--text);background:var(--page);font-size:13px;line-height:1.35;-webkit-font-smoothing:antialiased;overflow:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:
+  radial-gradient(420px 420px at 6% 92%,rgba(255,25,80,.10),transparent 70%),
+  radial-gradient(360px 360px at 30% 8%,rgba(255,190,92,.10),transparent 70%),
+  radial-gradient(500px 500px at 95% 100%,rgba(255,25,80,.07),transparent 70%)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:6px}
+.tabnum{font-variant-numeric:tabular-nums}
+
+/* ---------- shell ---------- */
+.app{position:relative;height:100%;display:grid;grid-template-columns:224px 1fr;gap:16px;padding:12px}
+.sidebar{display:flex;flex-direction:column;gap:16px;min-height:0;overflow:auto;padding:4px 0}
+.main{background:var(--surface);border-radius:12px;display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.side-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 4px}
+.logo-svg{display:block;flex:none}
+.plus-btn{width:28px;height:28px;border-radius:8px;border:1px solid rgba(50,50,50,.15);display:grid;place-items:center;background:var(--surface);transition:background .15s}
+.plus-btn:hover{background:var(--generic)}
+.plus-btn svg{width:26px;height:26px;display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 12px;border-radius:6px;font-size:13px;white-space:nowrap;transition:background .15s}
+.btn-l{height:36px;padding:0 16px;font-size:14px;border-radius:8px}
+.btn-brand{background:var(--brand);color:#fff}.btn-brand:hover{background:var(--brand-hover)}
+.btn-outline{border:1px solid var(--line-strong);background:var(--surface)}.btn-outline:hover{background:var(--generic)}
+.btn-normal{background:var(--generic)}.btn-normal:hover{background:var(--generic-hover)}
+.icon-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:var(--text)}
+.icon-btn:hover{background:var(--generic)}
+.icon-btn.outlined{border:1px solid var(--line-strong)}
+svg.i{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+svg.i20{width:20px;height:20px}
+
+/* mini calendar */
+.mini-head{display:flex;align-items:center;justify-content:space-between;padding:0 4px}
+.mini-title{font-size:15px;font-weight:500;color:var(--text)}
+.mini-grid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:2px;margin-top:18px}
+.mini-grid span{font-size:11px;color:var(--text-2);text-align:center;padding:4px 0}
+.mini-day{width:24px;height:24px;justify-self:center;display:grid;place-items:center;padding:0;font-size:11px;line-height:1;font-weight:400;border-radius:50%;color:var(--text)}
+.mini-day:focus-visible{border-radius:50%}
+.mini-day:hover{background:var(--generic)}
+.mini-day.other{color:var(--hint)}
+.mini-day.picked{background:var(--brand-soft);color:var(--brand)}
+.mini-day.today{background:var(--brand);color:#fff}
+.field{display:flex;align-items:center;gap:6px;height:28px;padding:0 8px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface)}
+.field input{border:0;outline:0;background:none;flex:1;min-width:0;font-size:13px}
+.field input::placeholder{color:var(--hint)}
+.field:focus-within{border-color:rgba(0,0,0,.35)}
+.cal-group h3{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:15px;font-weight:500}
+.cal-item{display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:13px;cursor:pointer;border-radius:6px}
+.cal-item:hover{background:rgba(0,0,0,.03)}
+.cb{appearance:none;width:16px;height:16px;border-radius:4px;border:1px solid var(--line-strong);margin:0;display:grid;place-items:center;background:var(--surface);cursor:pointer;flex:none}
+.cb:checked{background:var(--brand);border-color:var(--brand)}
+.cb:checked::after{content:"";width:8px;height:4px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.muted{color:var(--text-2)}
+
+/* top bar */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;height:56px;padding:0 12px;border-bottom:1px solid var(--line)}
+.topbar .field{width:248px}
+.top-right{display:flex;align-items:center;gap:8px}
+.sep{width:1px;height:32px;background:var(--line)}
+.avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#FFBE5C,#FF1950);color:#fff;font-weight:600;font-size:12px;display:grid;place-items:center}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 12px 12px}
+.period{display:flex;align-items:center;gap:8px}
+.period h1{margin:0;font-size:17px;font-weight:500;min-width:0;text-wrap:balance}
+.tools{display:flex;align-items:center;gap:8px;position:relative}
+.view{flex:1;min-height:0;position:relative;display:flex;flex-direction:column;padding:0 12px 12px}
+.appbar,.m-header,.tabbar,.week-strip{display:none}
+
+/* dropdown menu */
+.menu{position:absolute;z-index:40;background:var(--surface);border-radius:8px;padding:4px;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04)}
+.menu button{display:flex;width:100%;align-items:center;justify-content:space-between;padding:7px 10px;border-radius:6px;font-size:14px;text-align:left}
+.menu button:hover{background:var(--generic)}
+.menu button[aria-checked="true"]{color:var(--brand);font-weight:500}
+.hidden{display:none!important}
+
+/* ---------- timeline ---------- */
+.tl{flex:1;min-height:0;display:flex;flex-direction:column}
+.tl-row{display:grid;grid-template-columns:56px repeat(var(--n),minmax(0,1fr))}
+.tl-head{border-bottom:1px solid var(--line)}
+.tl-tz{font-size:10px;color:var(--text-2);align-self:end;justify-self:end;padding:0 8px 8px 0}
+.day-h{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px 0 8px;font-size:11px;color:var(--text-2);text-transform:uppercase;cursor:pointer;border-radius:6px}
+.day-h:hover{background:rgba(0,0,0,.03)}
+.day-h b{font-weight:400;font-size:16px;color:var(--text);text-transform:none}
+.day-h.today{color:var(--brand)}
+.day-h.today b{background:var(--brand);color:#fff;border-radius:6px;padding:0 6px;font-weight:500;font-size:14px;line-height:20px}
+.tl-allday{border-bottom:1px solid var(--line);min-height:6px}
+.tl-allday .ad-cell{padding:3px 2px;display:flex;flex-direction:column;gap:2px;border-left:1px solid var(--line);min-width:0}
+.tl-allday .ad-label{font-size:10px;color:var(--text-2);text-align:right;padding:6px 8px 0 0}
+.tl-scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:thin}
+.tl-grid{height:calc(var(--hour)*24);position:relative}
+.tl-hours{position:relative}
+.tl-hours span{position:absolute;right:8px;font-size:10px;color:var(--text-2);transform:translateY(-50%)}
+.tl-col{position:relative;border-left:1px solid var(--line);background-image:repeating-linear-gradient(to bottom,transparent 0 calc(var(--hour) - 1px),var(--line) calc(var(--hour) - 1px) var(--hour));cursor:cell}
+.tl-col.weekend{background-color:var(--weekend)}
+.ev{position:absolute;border-radius:6px;padding:3px 6px 3px 8px;overflow:hidden;cursor:pointer;text-align:left;background:color-mix(in srgb,var(--c) 16%,#fff);font-size:12px;line-height:1.3;transition:box-shadow .15s,filter .15s}
+.ev:hover{box-shadow:0 2px 8px rgba(0,0,0,.12);z-index:3}
+.ev .t{font-weight:500;color:var(--text);display:block;overflow:hidden;text-overflow:ellipsis}
+.ev .s{color:var(--text-2);font-size:11px;white-space:nowrap}
+.ev.short{display:flex;gap:6px;align-items:center;padding-top:1px;padding-bottom:1px}
+.ev.short .t{white-space:nowrap}
+.ev.short .s{display:none}
+.ev.stacked{box-shadow:0 0 0 1px #fff}
+.ev .t{overflow-wrap:normal;word-break:normal;hyphens:auto}
+.ev.dim,.chip.dim,.agenda-item.dim{opacity:.3}
+.ev.draft{box-shadow:0 2px 10px rgba(0,0,0,.18);z-index:4}
+.now{position:absolute;left:0;right:0;height:2px;background:var(--brand);z-index:5;pointer-events:none}
+.now::before{content:"";position:absolute;left:-5px;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--brand)}
+
+/* ---------- month ---------- */
+.month{flex:1;min-height:0;display:flex;flex-direction:column}
+.month-wd{display:grid;grid-template-columns:repeat(7,1fr)}
+.month-wd span{text-align:center;font-size:11px;color:var(--text-2);padding:6px 0}
+.month-grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:minmax(0,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+.m-cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:4px;display:flex;flex-direction:column;gap:2px;min-height:0;overflow:hidden;cursor:pointer}
+.m-cell:hover{background:rgba(0,0,0,.015)}
+.m-cell.weekend{background:var(--weekend)}
+.m-num{align-self:center;width:24px;height:24px;border-radius:12px;display:grid;place-items:center;font-size:12px;font-weight:500;flex:none}
+.m-cell.other .m-num{color:var(--hint)}
+.m-cell.today .m-num{background:var(--brand);color:#fff}
+.chip{display:flex;align-items:center;gap:4px;width:100%;padding:1px 6px;border-radius:4px;font-size:11px;line-height:16px;text-align:left;min-width:0;flex:none}
+.chip:hover{background:rgba(0,0,0,.05)}
+.chip .cd{width:6px;height:6px;border-radius:50%;background:var(--c);flex:none}
+.chip .ct{color:var(--text-2);flex:none}
+.chip .cn{font-weight:500;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.chip.fill{background:color-mix(in srgb,var(--c) 22%,#fff)}
+.m-cell.other .chip{opacity:.6}
+.more{font-size:11px;font-weight:500;color:var(--text-2);text-align:left;padding:0 6px}
+.more:hover{color:var(--text)}
+
+/* ---------- modal ---------- */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;animation:fade .15s ease-out}
+@keyframes fade{from{opacity:0}}
+@keyframes up{from{transform:translateY(100%)}}
+.sheet{position:relative;width:440px;max-width:100%;max-height:calc(100% - 16px);overflow-y:auto;background:var(--surface);border-radius:16px;padding:20px 24px 24px;box-shadow:0 8px 32px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.06);font-size:15px}
+.handle{display:none;width:32px;height:4px;border-radius:2px;background:var(--line-strong);margin:0 auto 12px}
+.m-actions{position:absolute;top:16px;right:16px;display:flex;gap:4px}
+.m-actions .icon-btn{width:32px;height:32px;color:var(--hint)}
+.m-actions .icon-btn:hover{color:var(--text)}
+.title-row{display:flex;align-items:center;gap:16px;padding:0 76px 12px 0}
+.title-row input{border:0;outline:0;flex:1;min-width:0;font-size:22px;font-weight:500;background:none;padding:2px 0}
+.title-row input::placeholder{color:var(--hint)}
+.row{display:flex;align-items:center;gap:16px;min-height:40px;padding:6px 0;color:var(--text-2)}
+.row>svg{color:var(--text-2)}
+.row .grow{flex:1;min-width:0}
+.row input.plain,.row textarea.plain{border:0;outline:0;width:100%;background:none;font-size:15px;color:var(--text);padding:4px 0;resize:none}
+.row input.plain::placeholder,.row textarea.plain::placeholder{color:var(--text-2)}
+.when{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--text)}
+.date-btn{position:relative;padding:2px 0;color:var(--text)}
+.date-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.sel{appearance:none;border:0;background:none;outline:0;font-size:15px;color:var(--text);padding:2px 18px 2px 0;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M6 8l4 4 4-4' fill='none' stroke='%23262626' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right center;background-size:16px}
+.sel:focus-visible{outline:2px solid var(--brand)}
+.check{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--text);margin-left:auto;cursor:pointer}
+.link-act{color:var(--brand);font-size:15px}
+.link-act:hover{text-decoration:underline}
+.color-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px 4px 10px;border-radius:12px;font-size:13px;font-weight:500;background:color-mix(in srgb,var(--c) 20%,#fff);color:var(--text);position:relative}
+.swatches{position:absolute;right:0;top:calc(100% + 6px);display:grid;grid-template-columns:repeat(4,24px);gap:8px;padding:10px;background:var(--surface);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04);z-index:5}
+.swatches button{width:24px;height:24px;border-radius:50%;background:var(--c)}
+.swatches button[aria-pressed="true"]{box-shadow:0 0 0 2px #fff,0 0 0 4px var(--c)}
+.section-t{font-size:17px;font-weight:500;color:var(--text);margin:16px 0 4px}
+.rm-x{color:var(--hint)}
+.rm-x:hover{color:var(--text)}
+.files{display:flex;flex-wrap:wrap;gap:6px}
+.file-pill{font-size:12px;background:var(--generic);border-radius:10px;padding:2px 8px;color:var(--text)}
+.busy{font-size:13px;border-radius:8px;padding:10px 12px;margin-top:12px;background:var(--generic);color:var(--text)}
+.busy.warn{background:color-mix(in srgb,var(--personal) 22%,#fff)}
+.footer{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.footer .spacer{flex:1}
+.btn-danger{color:#E5343A}
+.btn-danger:hover{background:rgba(229,52,58,.08)}
+.hint-line{font-size:12px;color:var(--text-2);margin-top:4px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:70;animation:fade .2s}
+.pop{position:absolute;right:0;top:36px;width:260px;background:var(--surface);border-radius:10px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.04);z-index:40;font-size:13px}
+.pop h4{margin:0 0 6px;font-size:13px;font-weight:600}
+
+
+/* collapsible sidebar (desktop) */
+.top-left{display:flex;align-items:center;gap:8px;min-width:0}
+.top-plus{display:none}
+.collapse-btn svg{transition:transform .2s ease}
+.app{transition:grid-template-columns .2s ease,gap .2s ease}
+.sidebar{transition:opacity .15s ease}
+@media (min-width:1025px){
+  .app.collapsed{grid-template-columns:0px 1fr;gap:0}
+  .app.collapsed .sidebar{opacity:0;visibility:hidden;pointer-events:none}
+  .app.collapsed .collapse-btn svg{transform:scaleX(-1)}
+  .app.collapsed .top-plus{display:grid}
+  .app.collapsed .collapse-btn{order:-1}
+}
+@media (max-width:1024px){ .top-plus,.collapse-btn{display:none} }
+/* ---------- tablet ---------- */
+@media (max-width:1024px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr;gap:12px}
+  .appbar{display:flex;align-items:center;gap:12px}
+  .appbar .spacer{flex:1}
+  .sidebar{position:fixed;z-index:45;left:0;top:0;bottom:0;width:272px;background:var(--surface);padding:16px;box-shadow:8px 0 32px rgba(0,0,0,.12);transform:translateX(-105%);transition:transform .2s ease-out}
+  .sidebar.open{transform:none}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:44}
+  .sidebar .side-head .plus-btn{display:none}
+  .appbar .plus-btn{width:32px;height:32px}
+}
+/* ---------- mobile ---------- */
+@media (max-width:640px){
+  body{background:var(--surface);font-size:14px}
+  body::before{display:none}
+  .app{padding:0;gap:0;grid-template-rows:1fr}
+  .appbar,.topbar,.toolbar{display:none}
+  .main{border-radius:0;box-shadow:none}
+  .m-header{display:flex;align-items:center;gap:12px;padding:16px 16px 10px 20px}
+  .m-header h1{margin:0;font-size:24px;font-weight:500;flex:1}
+  .m-header .icon-btn{width:36px;height:36px}
+  .m-header svg.i{width:22px;height:22px}
+  .view{padding:0}
+  .tabbar{display:flex;border-top:1px solid var(--line);background:var(--surface);padding:8px 0 12px}
+  .tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:var(--hint)}
+  .tabbar button svg{width:24px;height:24px}
+  .tabbar button[aria-selected="true"]{color:var(--brand);font-weight:500}
+  .tl-row{grid-template-columns:48px repeat(var(--n),minmax(0,1fr))}
+  .tl-allday .ad-label{display:none}
+  .week-strip{display:block;border-bottom:1px solid var(--line);padding:0 8px 8px}
+  .mm-grid,.ws-row{display:grid;grid-template-columns:repeat(7,1fr);gap:4px 0;padding:0 8px}
+  .ws-row{padding:0}
+  .mm-wd{display:grid;grid-template-columns:repeat(7,1fr);padding:0 8px 4px}
+  .mm-wd span{text-align:center;font-size:12px;color:var(--text-2)}
+  .mm-day{height:52px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:18px;color:var(--text);margin:0 2px}
+  .mm-day i{width:4px;height:4px;border-radius:50%;background:currentColor;visibility:hidden}
+  .mm-day i.on{visibility:visible}
+  .mm-day.other{color:var(--hint)}
+  .mm-day.today{color:var(--brand);font-weight:600}
+  .mm-day.picked{background:var(--brand);color:#fff}
+  .grab{width:32px;height:4px;border-radius:2px;background:var(--line-strong);margin:12px auto}
+  .agenda{flex:1;min-height:0;overflow:auto;padding:0 16px 16px}
+  .agenda-card{background:var(--generic);border-radius:16px;padding:4px 0}
+  .agenda-day{font-size:13px;color:var(--text-2);margin:0 4px 8px}
+  .agenda-item{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;text-align:left}
+  .agenda-item:hover{background:rgba(0,0,0,.03)}
+  .agenda-item .at{display:block;font-size:16px;font-weight:500}
+  .agenda-item .as{display:block;font-size:13px;color:var(--text-2)}
+  .agenda-item .ad{width:8px;height:8px;border-radius:50%;background:var(--c);margin-left:auto;flex:none}
+  .empty{padding:20px 16px;color:var(--text-2);text-align:center}
+  .backdrop{align-items:flex-end;padding:0}
+  .sheet{width:100%;border-radius:20px 20px 0 0;padding:8px 16px 24px;max-height:calc(100% - 40px);animation:up .22s ease-out}
+  .handle{display:block}
+  .m-actions{top:20px;right:12px}
+  .title-row input{font-size:20px}
+  .footer{flex-direction:column}
+  .footer .btn{width:100%}
+  .footer .spacer{display:none}
+}
+
+/* ---------- event view ---------- */
+.vpop{position:fixed;z-index:48;width:400px;max-width:calc(100vw - 24px);background:var(--surface);border-radius:16px;padding:12px 20px 20px;box-shadow:0 8px 32px rgba(0,0,0,.14),0 1px 4px rgba(0,0,0,.06);font-size:15px;overflow-y:auto;animation:fade .12s ease-out}
+.v-actions{display:flex;justify-content:flex-end;gap:4px}
+.v-actions .icon-btn{width:32px;height:32px;color:var(--text-2)}
+.v-actions .icon-btn:hover{color:var(--text)}
+.v-actions svg.i{width:20px;height:20px}
+.v-head{display:flex;gap:16px;padding:4px 0 12px}
+.v-sq{width:16px;height:16px;border-radius:4px;background:var(--c);margin:7px 2px 0;flex:none}
+.v-title{margin:0;font-size:22px;font-weight:500;line-height:1.3;overflow-wrap:anywhere;text-wrap:balance}
+.v-when{font-size:14px;margin-top:4px}
+.v-rep{font-size:13px;color:var(--text-2);margin-top:2px}
+.v-row{display:flex;gap:16px;padding:8px 0;align-items:flex-start;color:var(--text)}
+.v-row>svg{color:var(--text-2);margin-top:1px}
+.v-row .grow{flex:1;min-width:0;overflow-wrap:anywhere}
+.v-sub{font-size:13px;color:var(--text-2)}
+.v-join{display:inline-flex;text-decoration:none}
+.v-link{display:block;margin-top:6px;font-size:13px;color:var(--text-2);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v-link:hover{color:var(--text)}
+.guest{display:flex;align-items:center;gap:10px;margin-top:8px}
+.guest .av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:500;color:var(--g);background:color-mix(in srgb,var(--g) 18%,#fff);flex:none}
+.guest .gn{font-size:14px;line-height:1.2}
+.guest .gs{font-size:12px;color:var(--text-2)}
+.v-desc{white-space:pre-wrap}
+.v-div{height:1px;background:var(--line);margin:8px 0 12px}
+.rsvp{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rsvp b{font-weight:500;margin-right:auto}
+.rsvp button{height:32px;padding:0 14px;border-radius:8px;border:1px solid var(--line-strong);font-size:14px}
+.rsvp button:hover{background:var(--generic)}
+.rsvp button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.confirm{margin-top:12px;padding:12px;border-radius:10px;background:var(--generic);font-size:14px}
+.confirm .row-btns{display:flex;gap:8px;margin-top:10px}
+@media (max-width:640px){
+  .vpop{display:none}
+  .sheet.view-sheet{padding:8px 16px 24px}
+  .rsvp{flex-direction:column;align-items:stretch}
+  .rsvp b{margin:0 0 2px}
+  .rsvp .opts{display:flex;gap:8px}
+  .rsvp .opts button{flex:1}
+  .v-join{display:flex;width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- tablet app bar -->
+  <div class="appbar">
+    <button class="icon-btn outlined" id="menuBtn" aria-label="Открыть меню" style="width:32px;height:32px"><svg class="i" viewBox="0 0 16 16"><path d="M3 4.5h10M3 8h10M3 11.5h10"/></svg></button>
+    <svg class="logo-svg" width="104" height="48" viewBox="0 0 104 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Calendar"><g transform="translate(2 10)"><path d="M1.42661 6.39912C1.19573 2.93602 3.94253 0 7.41332 0H20.5867C24.0575 0 26.8043 2.93602 26.5734 6.39911L26 15H2L1.42661 6.39912Z" fill="url(#logo-grad-1)"/><path opacity="0.6" d="M2 15H26L26.9366 21.0877C27.4957 24.7222 24.6836 28 21.0063 28H6.99367C3.31636 28 0.504276 24.7222 1.06344 21.0877L2 15Z" fill="#FF1F55"/><path opacity="0.6" d="M2 15H26L26.9366 21.0877C27.4957 24.7222 24.6836 28 21.0063 28H6.99367C3.31636 28 0.504276 24.7222 1.06344 21.0877L2 15Z" fill="#FF1F55"/><text class="logo-day" x="13.5" y="18.9" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="15" fill="white">6</text></g><path d="M48.2592 21.6385H46.5973C46.5334 21.2834 46.4144 20.9709 46.2404 20.701C46.0664 20.4311 45.8533 20.2021 45.6012 20.0138C45.3491 19.8256 45.0668 19.6836 44.7543 19.5877C44.4453 19.4918 44.1168 19.4439 43.7688 19.4439C43.1403 19.4439 42.5774 19.6019 42.0803 19.918C41.5866 20.234 41.196 20.6974 40.9084 21.3082C40.6243 21.919 40.4822 22.6648 40.4822 23.5455C40.4822 24.4332 40.6243 25.1825 40.9084 25.7933C41.196 26.4041 41.5884 26.8658 42.0856 27.1783C42.5827 27.4908 43.142 27.647 43.7635 27.647C44.108 27.647 44.4347 27.6009 44.7436 27.5085C45.0561 27.4126 45.3384 27.2724 45.5906 27.0877C45.8427 26.9031 46.0558 26.6776 46.2298 26.4112C46.4073 26.1413 46.5298 25.8324 46.5973 25.4844L48.2592 25.4897C48.1705 26.0259 47.9982 26.5195 47.7425 26.9705C47.4904 27.418 47.1655 27.805 46.7678 28.1317C46.3736 28.4549 45.9226 28.7053 45.4148 28.8828C44.907 29.0604 44.353 29.1491 43.7528 29.1491C42.8082 29.1491 41.9666 28.9254 41.228 28.478C40.4893 28.027 39.907 27.3825 39.4808 26.5444C39.0582 25.7063 38.8469 24.7067 38.8469 23.5455C38.8469 22.3807 39.06 21.381 39.4862 20.5465C39.9123 19.7085 40.4947 19.0657 41.2333 18.6183C41.9719 18.1673 42.8118 17.9418 43.7528 17.9418C44.3317 17.9418 44.8714 18.0252 45.3722 18.1921C45.8764 18.3555 46.3292 18.5969 46.7305 18.9165C47.1317 19.2326 47.4638 19.6197 47.7266 20.0778C47.9893 20.5323 48.1669 21.0526 48.2592 21.6385ZM52.482 29.1811C51.9635 29.1811 51.4948 29.0852 51.0757 28.8935C50.6567 28.6982 50.3247 28.4158 50.0796 28.0465C49.8382 27.6772 49.7174 27.2244 49.7174 26.6882C49.7174 26.2266 49.8062 25.8466 49.9838 25.5483C50.1613 25.25 50.401 25.0138 50.7029 24.8398C51.0047 24.6658 51.3421 24.5344 51.7149 24.4457C52.0878 24.3569 52.4678 24.2894 52.8548 24.2433C53.3449 24.1864 53.7426 24.1403 54.048 24.1048C54.3534 24.0657 54.5754 24.0036 54.7139 23.9183C54.8524 23.8331 54.9216 23.6946 54.9216 23.5028V23.4656C54.9216 23.0004 54.7902 22.6399 54.5274 22.3842C54.2682 22.1286 53.8811 22.0007 53.3662 22.0007C52.83 22.0007 52.4074 22.1197 52.0985 22.3576C51.7931 22.592 51.5818 22.853 51.4646 23.1406L49.9678 22.7997C50.1453 22.3026 50.4046 21.9013 50.7455 21.5959C51.0899 21.2869 51.4859 21.0632 51.9333 20.9247C52.3808 20.7827 52.8513 20.7116 53.3449 20.7116C53.6716 20.7116 54.0178 20.7507 54.3836 20.8288C54.7529 20.9034 55.0974 21.0419 55.417 21.2443C55.7401 21.4467 56.0047 21.7362 56.2107 22.1126C56.4166 22.4854 56.5196 22.9702 56.5196 23.5668V29H54.9642V27.8814H54.9003C54.7973 28.0874 54.6428 28.2898 54.4369 28.4886C54.2309 28.6875 53.9664 28.8526 53.6432 28.984C53.32 29.1154 52.933 29.1811 52.482 29.1811ZM52.8282 27.9027C53.2686 27.9027 53.645 27.8157 53.9575 27.6417C54.2735 27.4677 54.5132 27.2404 54.6766 26.9599C54.8435 26.6758 54.9269 26.3722 54.9269 26.049V24.9943C54.8701 25.0511 54.76 25.1044 54.5967 25.1541C54.4369 25.2003 54.254 25.2411 54.048 25.2766C53.8421 25.3086 53.6414 25.3388 53.4461 25.3672C53.2508 25.392 53.0874 25.4134 52.9561 25.4311C52.6471 25.4702 52.3648 25.5359 52.1091 25.6282C51.857 25.7205 51.6546 25.8537 51.5019 26.0277C51.3527 26.1982 51.2781 26.4254 51.2781 26.7095C51.2781 27.1037 51.4237 27.402 51.7149 27.6044C52.0061 27.8033 52.3772 27.9027 52.8282 27.9027ZM60.2337 18.0909V29H58.641V18.0909H60.2337ZM65.9026 29.1651C65.0965 29.1651 64.4023 28.9929 63.8199 28.6484C63.241 28.3004 62.7936 27.8121 62.4775 27.1836C62.165 26.5515 62.0088 25.8111 62.0088 24.9624C62.0088 24.1243 62.165 23.3857 62.4775 22.7464C62.7936 22.1072 63.2339 21.6083 63.7986 21.2496C64.3667 20.891 65.0308 20.7116 65.7907 20.7116C66.2524 20.7116 66.6998 20.788 67.1331 20.9407C67.5663 21.0934 67.9552 21.3331 68.2996 21.6598C68.6441 21.9865 68.9158 22.4109 69.1146 22.9329C69.3135 23.4513 69.4129 24.0817 69.4129 24.8239V25.3885H62.909V24.1953H67.8522C67.8522 23.7763 67.767 23.4052 67.5965 23.082C67.426 22.7553 67.1863 22.4979 66.8774 22.3097C66.572 22.1214 66.2133 22.0273 65.8014 22.0273C65.354 22.0273 64.9633 22.1374 64.6295 22.3576C64.2993 22.5742 64.0436 22.8583 63.8625 23.2099C63.6849 23.5579 63.5961 23.9361 63.5961 24.3445V25.2766C63.5961 25.8235 63.692 26.2887 63.8838 26.6722C64.0791 27.0558 64.3508 27.3487 64.6988 27.5511C65.0468 27.75 65.4534 27.8494 65.9186 27.8494C66.2204 27.8494 66.4956 27.8068 66.7442 27.7216C66.9928 27.6328 67.2077 27.5014 67.3888 27.3274C67.5699 27.1534 67.7084 26.9386 67.8042 26.6829L69.3117 26.9545C69.191 27.3984 68.9743 27.7873 68.6618 28.1211C68.3529 28.4513 67.964 28.7088 67.4953 28.8935C67.0301 29.0746 66.4992 29.1651 65.9026 29.1651ZM72.7727 24.142V29H71.18V20.8182H72.7088V22.1499H72.81C72.9982 21.7166 73.293 21.3686 73.6942 21.1058C74.0991 20.843 74.6087 20.7116 75.223 20.7116C75.7805 20.7116 76.2688 20.8288 76.6879 21.0632C77.1069 21.294 77.4318 21.6385 77.6626 22.0966C77.8935 22.5547 78.0089 23.1211 78.0089 23.7958V29H76.4162V23.9876C76.4162 23.3945 76.2617 22.9311 75.9528 22.5973C75.6438 22.2599 75.2195 22.0913 74.6797 22.0913C74.3104 22.0913 73.9819 22.1712 73.6942 22.331C73.4102 22.4908 73.1847 22.7251 73.0178 23.0341C72.8544 23.3395 72.7727 23.7088 72.7727 24.142ZM83.2077 29.1598C82.5472 29.1598 81.9577 28.9911 81.4393 28.6538C80.9244 28.3129 80.5195 27.8281 80.2248 27.1996C79.9336 26.5675 79.788 25.8093 79.788 24.9251C79.788 24.0408 79.9354 23.2844 80.2301 22.6559C80.5284 22.0273 80.9368 21.5462 81.4553 21.2124C81.9737 20.8786 82.5614 20.7116 83.2184 20.7116C83.7262 20.7116 84.1346 20.7969 84.4435 20.9673C84.756 21.1342 84.9975 21.3295 85.168 21.5533C85.342 21.777 85.4769 21.9741 85.5728 22.1445H85.6687V18.0909H87.2614V29H85.706V27.7269H85.5728C85.4769 27.9009 85.3384 28.0998 85.1573 28.3235C84.9798 28.5472 84.7347 28.7425 84.4222 28.9094C84.1097 29.0763 83.7049 29.1598 83.2077 29.1598ZM83.5593 27.8015C84.0174 27.8015 84.4045 27.6808 84.7205 27.4393C85.0401 27.1942 85.2816 26.8551 85.445 26.4219C85.6119 25.9886 85.6953 25.4844 85.6953 24.9091C85.6953 24.3409 85.6136 23.8438 85.4503 23.4176C85.2869 22.9915 85.0472 22.6594 84.7312 22.4215C84.4151 22.1836 84.0245 22.0646 83.5593 22.0646C83.0799 22.0646 82.6804 22.1889 82.3608 22.4375C82.0412 22.6861 81.7997 23.0252 81.6364 23.4549C81.4766 23.8846 81.3967 24.3693 81.3967 24.9091C81.3967 25.456 81.4783 25.9478 81.6417 26.3846C81.805 26.8214 82.0465 27.1676 82.3661 27.4233C82.6893 27.6754 83.087 27.8015 83.5593 27.8015ZM91.9156 29.1811C91.3971 29.1811 90.9284 29.0852 90.5093 28.8935C90.0903 28.6982 89.7583 28.4158 89.5132 28.0465C89.2718 27.6772 89.151 27.2244 89.151 26.6882C89.151 26.2266 89.2398 25.8466 89.4173 25.5483C89.5949 25.25 89.8346 25.0138 90.1365 24.8398C90.4383 24.6658 90.7757 24.5344 91.1485 24.4457C91.5214 24.3569 91.9014 24.2894 92.2884 24.2433C92.7785 24.1864 93.1762 24.1403 93.4816 24.1048C93.787 24.0657 94.009 24.0036 94.1475 23.9183C94.286 23.8331 94.3552 23.6946 94.3552 23.5028V23.4656C94.3552 23.0004 94.2238 22.6399 93.961 22.3842C93.7018 22.1286 93.3147 22.0007 92.7998 22.0007C92.2636 22.0007 91.841 22.1197 91.5321 22.3576C91.2267 22.592 91.0154 22.853 90.8982 23.1406L89.4014 22.7997C89.5789 22.3026 89.8382 21.9013 90.1791 21.5959C90.5235 21.2869 90.9195 21.0632 91.3669 20.9247C91.8144 20.7827 92.2849 20.7116 92.7785 20.7116C93.1052 20.7116 93.4514 20.7507 93.8172 20.8288C94.1865 20.9034 94.531 21.0419 94.8506 21.2443C95.1737 21.4467 95.4383 21.7362 95.6443 22.1126C95.8502 22.4854 95.9532 22.9702 95.9532 23.5668V29H94.3978V27.8814H94.3339C94.2309 28.0874 94.0764 28.2898 93.8705 28.4886C93.6645 28.6875 93.3999 28.8526 93.0768 28.984C92.7536 29.1154 92.3666 29.1811 91.9156 29.1811ZM92.2618 27.9027C92.7021 27.9027 93.0786 27.8157 93.3911 27.6417C93.7071 27.4677 93.9468 27.2404 94.1102 26.9599C94.2771 26.6758 94.3605 26.3722 94.3605 26.049V24.9943C94.3037 25.0511 94.1936 25.1044 94.0303 25.1541C93.8705 25.2003 93.6876 25.2411 93.4816 25.2766C93.2757 25.3086 93.075 25.3388 92.8797 25.3672C92.6844 25.392 92.521 25.4134 92.3896 25.4311C92.0807 25.4702 91.7984 25.5359 91.5427 25.6282C91.2906 25.7205 91.0882 25.8537 90.9355 26.0277C90.7863 26.1982 90.7117 26.4254 90.7117 26.7095C90.7117 27.1037 90.8573 27.402 91.1485 27.6044C91.4397 27.8033 91.8108 27.9027 92.2618 27.9027ZM98.0746 29V20.8182H99.614V22.1179H99.6992C99.8484 21.6776 100.111 21.3313 100.488 21.0792C100.868 20.8235 101.297 20.6957 101.777 20.6957C101.876 20.6957 101.993 20.6992 102.128 20.7063C102.267 20.7134 102.375 20.7223 102.453 20.733V22.2564C102.389 22.2386 102.276 22.2191 102.112 22.1978C101.949 22.1729 101.786 22.1605 101.622 22.1605C101.246 22.1605 100.91 22.2404 100.615 22.4002C100.324 22.5565 100.093 22.7749 99.9229 23.0554C99.7525 23.3324 99.6673 23.6484 99.6673 24.0036V29H98.0746Z" fill="#3F4652"/><defs><linearGradient id="logo-grad-1" x1="14" y1="0" x2="14" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="#FF1950"/><stop offset="1" stop-color="#FF7394"/></linearGradient></defs></svg>
+    <div class="spacer"></div>
+    <button class="plus-btn" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M13 8.6V17.4M8.6 13H17.4" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Боковая панель">
+    <div class="side-head"><svg class="logo-svg" width="104" height="48" viewBox="0 0 104 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Calendar"><g transform="translate(2 10)"><path d="M1.42661 6.39912C1.19573 2.93602 3.94253 0 7.41332 0H20.5867C24.0575 0 26.8043 2.93602 26.5734 6.39911L26 15H2L1.42661 6.39912Z" fill="url(#logo-grad-2)"/><path opacity="0.6" d="M2 15H26L26.9366 21.0877C27.4957 24.7222 24.6836 28 21.0063 28H6.99367C3.31636 28 0.504276 24.7222 1.06344 21.0877L2 15Z" fill="#FF1F55"/><path opacity="0.6" d="M2 15H26L26.9366 21.0877C27.4957 24.7222 24.6836 28 21.0063 28H6.99367C3.31636 28 0.504276 24.7222 1.06344 21.0877L2 15Z" fill="#FF1F55"/><text class="logo-day" x="13.5" y="18.9" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="15" fill="white">6</text></g><path d="M48.2592 21.6385H46.5973C46.5334 21.2834 46.4144 20.9709 46.2404 20.701C46.0664 20.4311 45.8533 20.2021 45.6012 20.0138C45.3491 19.8256 45.0668 19.6836 44.7543 19.5877C44.4453 19.4918 44.1168 19.4439 43.7688 19.4439C43.1403 19.4439 42.5774 19.6019 42.0803 19.918C41.5866 20.234 41.196 20.6974 40.9084 21.3082C40.6243 21.919 40.4822 22.6648 40.4822 23.5455C40.4822 24.4332 40.6243 25.1825 40.9084 25.7933C41.196 26.4041 41.5884 26.8658 42.0856 27.1783C42.5827 27.4908 43.142 27.647 43.7635 27.647C44.108 27.647 44.4347 27.6009 44.7436 27.5085C45.0561 27.4126 45.3384 27.2724 45.5906 27.0877C45.8427 26.9031 46.0558 26.6776 46.2298 26.4112C46.4073 26.1413 46.5298 25.8324 46.5973 25.4844L48.2592 25.4897C48.1705 26.0259 47.9982 26.5195 47.7425 26.9705C47.4904 27.418 47.1655 27.805 46.7678 28.1317C46.3736 28.4549 45.9226 28.7053 45.4148 28.8828C44.907 29.0604 44.353 29.1491 43.7528 29.1491C42.8082 29.1491 41.9666 28.9254 41.228 28.478C40.4893 28.027 39.907 27.3825 39.4808 26.5444C39.0582 25.7063 38.8469 24.7067 38.8469 23.5455C38.8469 22.3807 39.06 21.381 39.4862 20.5465C39.9123 19.7085 40.4947 19.0657 41.2333 18.6183C41.9719 18.1673 42.8118 17.9418 43.7528 17.9418C44.3317 17.9418 44.8714 18.0252 45.3722 18.1921C45.8764 18.3555 46.3292 18.5969 46.7305 18.9165C47.1317 19.2326 47.4638 19.6197 47.7266 20.0778C47.9893 20.5323 48.1669 21.0526 48.2592 21.6385ZM52.482 29.1811C51.9635 29.1811 51.4948 29.0852 51.0757 28.8935C50.6567 28.6982 50.3247 28.4158 50.0796 28.0465C49.8382 27.6772 49.7174 27.2244 49.7174 26.6882C49.7174 26.2266 49.8062 25.8466 49.9838 25.5483C50.1613 25.25 50.401 25.0138 50.7029 24.8398C51.0047 24.6658 51.3421 24.5344 51.7149 24.4457C52.0878 24.3569 52.4678 24.2894 52.8548 24.2433C53.3449 24.1864 53.7426 24.1403 54.048 24.1048C54.3534 24.0657 54.5754 24.0036 54.7139 23.9183C54.8524 23.8331 54.9216 23.6946 54.9216 23.5028V23.4656C54.9216 23.0004 54.7902 22.6399 54.5274 22.3842C54.2682 22.1286 53.8811 22.0007 53.3662 22.0007C52.83 22.0007 52.4074 22.1197 52.0985 22.3576C51.7931 22.592 51.5818 22.853 51.4646 23.1406L49.9678 22.7997C50.1453 22.3026 50.4046 21.9013 50.7455 21.5959C51.0899 21.2869 51.4859 21.0632 51.9333 20.9247C52.3808 20.7827 52.8513 20.7116 53.3449 20.7116C53.6716 20.7116 54.0178 20.7507 54.3836 20.8288C54.7529 20.9034 55.0974 21.0419 55.417 21.2443C55.7401 21.4467 56.0047 21.7362 56.2107 22.1126C56.4166 22.4854 56.5196 22.9702 56.5196 23.5668V29H54.9642V27.8814H54.9003C54.7973 28.0874 54.6428 28.2898 54.4369 28.4886C54.2309 28.6875 53.9664 28.8526 53.6432 28.984C53.32 29.1154 52.933 29.1811 52.482 29.1811ZM52.8282 27.9027C53.2686 27.9027 53.645 27.8157 53.9575 27.6417C54.2735 27.4677 54.5132 27.2404 54.6766 26.9599C54.8435 26.6758 54.9269 26.3722 54.9269 26.049V24.9943C54.8701 25.0511 54.76 25.1044 54.5967 25.1541C54.4369 25.2003 54.254 25.2411 54.048 25.2766C53.8421 25.3086 53.6414 25.3388 53.4461 25.3672C53.2508 25.392 53.0874 25.4134 52.9561 25.4311C52.6471 25.4702 52.3648 25.5359 52.1091 25.6282C51.857 25.7205 51.6546 25.8537 51.5019 26.0277C51.3527 26.1982 51.2781 26.4254 51.2781 26.7095C51.2781 27.1037 51.4237 27.402 51.7149 27.6044C52.0061 27.8033 52.3772 27.9027 52.8282 27.9027ZM60.2337 18.0909V29H58.641V18.0909H60.2337ZM65.9026 29.1651C65.0965 29.1651 64.4023 28.9929 63.8199 28.6484C63.241 28.3004 62.7936 27.8121 62.4775 27.1836C62.165 26.5515 62.0088 25.8111 62.0088 24.9624C62.0088 24.1243 62.165 23.3857 62.4775 22.7464C62.7936 22.1072 63.2339 21.6083 63.7986 21.2496C64.3667 20.891 65.0308 20.7116 65.7907 20.7116C66.2524 20.7116 66.6998 20.788 67.1331 20.9407C67.5663 21.0934 67.9552 21.3331 68.2996 21.6598C68.6441 21.9865 68.9158 22.4109 69.1146 22.9329C69.3135 23.4513 69.4129 24.0817 69.4129 24.8239V25.3885H62.909V24.1953H67.8522C67.8522 23.7763 67.767 23.4052 67.5965 23.082C67.426 22.7553 67.1863 22.4979 66.8774 22.3097C66.572 22.1214 66.2133 22.0273 65.8014 22.0273C65.354 22.0273 64.9633 22.1374 64.6295 22.3576C64.2993 22.5742 64.0436 22.8583 63.8625 23.2099C63.6849 23.5579 63.5961 23.9361 63.5961 24.3445V25.2766C63.5961 25.8235 63.692 26.2887 63.8838 26.6722C64.0791 27.0558 64.3508 27.3487 64.6988 27.5511C65.0468 27.75 65.4534 27.8494 65.9186 27.8494C66.2204 27.8494 66.4956 27.8068 66.7442 27.7216C66.9928 27.6328 67.2077 27.5014 67.3888 27.3274C67.5699 27.1534 67.7084 26.9386 67.8042 26.6829L69.3117 26.9545C69.191 27.3984 68.9743 27.7873 68.6618 28.1211C68.3529 28.4513 67.964 28.7088 67.4953 28.8935C67.0301 29.0746 66.4992 29.1651 65.9026 29.1651ZM72.7727 24.142V29H71.18V20.8182H72.7088V22.1499H72.81C72.9982 21.7166 73.293 21.3686 73.6942 21.1058C74.0991 20.843 74.6087 20.7116 75.223 20.7116C75.7805 20.7116 76.2688 20.8288 76.6879 21.0632C77.1069 21.294 77.4318 21.6385 77.6626 22.0966C77.8935 22.5547 78.0089 23.1211 78.0089 23.7958V29H76.4162V23.9876C76.4162 23.3945 76.2617 22.9311 75.9528 22.5973C75.6438 22.2599 75.2195 22.0913 74.6797 22.0913C74.3104 22.0913 73.9819 22.1712 73.6942 22.331C73.4102 22.4908 73.1847 22.7251 73.0178 23.0341C72.8544 23.3395 72.7727 23.7088 72.7727 24.142ZM83.2077 29.1598C82.5472 29.1598 81.9577 28.9911 81.4393 28.6538C80.9244 28.3129 80.5195 27.8281 80.2248 27.1996C79.9336 26.5675 79.788 25.8093 79.788 24.9251C79.788 24.0408 79.9354 23.2844 80.2301 22.6559C80.5284 22.0273 80.9368 21.5462 81.4553 21.2124C81.9737 20.8786 82.5614 20.7116 83.2184 20.7116C83.7262 20.7116 84.1346 20.7969 84.4435 20.9673C84.756 21.1342 84.9975 21.3295 85.168 21.5533C85.342 21.777 85.4769 21.9741 85.5728 22.1445H85.6687V18.0909H87.2614V29H85.706V27.7269H85.5728C85.4769 27.9009 85.3384 28.0998 85.1573 28.3235C84.9798 28.5472 84.7347 28.7425 84.4222 28.9094C84.1097 29.0763 83.7049 29.1598 83.2077 29.1598ZM83.5593 27.8015C84.0174 27.8015 84.4045 27.6808 84.7205 27.4393C85.0401 27.1942 85.2816 26.8551 85.445 26.4219C85.6119 25.9886 85.6953 25.4844 85.6953 24.9091C85.6953 24.3409 85.6136 23.8438 85.4503 23.4176C85.2869 22.9915 85.0472 22.6594 84.7312 22.4215C84.4151 22.1836 84.0245 22.0646 83.5593 22.0646C83.0799 22.0646 82.6804 22.1889 82.3608 22.4375C82.0412 22.6861 81.7997 23.0252 81.6364 23.4549C81.4766 23.8846 81.3967 24.3693 81.3967 24.9091C81.3967 25.456 81.4783 25.9478 81.6417 26.3846C81.805 26.8214 82.0465 27.1676 82.3661 27.4233C82.6893 27.6754 83.087 27.8015 83.5593 27.8015ZM91.9156 29.1811C91.3971 29.1811 90.9284 29.0852 90.5093 28.8935C90.0903 28.6982 89.7583 28.4158 89.5132 28.0465C89.2718 27.6772 89.151 27.2244 89.151 26.6882C89.151 26.2266 89.2398 25.8466 89.4173 25.5483C89.5949 25.25 89.8346 25.0138 90.1365 24.8398C90.4383 24.6658 90.7757 24.5344 91.1485 24.4457C91.5214 24.3569 91.9014 24.2894 92.2884 24.2433C92.7785 24.1864 93.1762 24.1403 93.4816 24.1048C93.787 24.0657 94.009 24.0036 94.1475 23.9183C94.286 23.8331 94.3552 23.6946 94.3552 23.5028V23.4656C94.3552 23.0004 94.2238 22.6399 93.961 22.3842C93.7018 22.1286 93.3147 22.0007 92.7998 22.0007C92.2636 22.0007 91.841 22.1197 91.5321 22.3576C91.2267 22.592 91.0154 22.853 90.8982 23.1406L89.4014 22.7997C89.5789 22.3026 89.8382 21.9013 90.1791 21.5959C90.5235 21.2869 90.9195 21.0632 91.3669 20.9247C91.8144 20.7827 92.2849 20.7116 92.7785 20.7116C93.1052 20.7116 93.4514 20.7507 93.8172 20.8288C94.1865 20.9034 94.531 21.0419 94.8506 21.2443C95.1737 21.4467 95.4383 21.7362 95.6443 22.1126C95.8502 22.4854 95.9532 22.9702 95.9532 23.5668V29H94.3978V27.8814H94.3339C94.2309 28.0874 94.0764 28.2898 93.8705 28.4886C93.6645 28.6875 93.3999 28.8526 93.0768 28.984C92.7536 29.1154 92.3666 29.1811 91.9156 29.1811ZM92.2618 27.9027C92.7021 27.9027 93.0786 27.8157 93.3911 27.6417C93.7071 27.4677 93.9468 27.2404 94.1102 26.9599C94.2771 26.6758 94.3605 26.3722 94.3605 26.049V24.9943C94.3037 25.0511 94.1936 25.1044 94.0303 25.1541C93.8705 25.2003 93.6876 25.2411 93.4816 25.2766C93.2757 25.3086 93.075 25.3388 92.8797 25.3672C92.6844 25.392 92.521 25.4134 92.3896 25.4311C92.0807 25.4702 91.7984 25.5359 91.5427 25.6282C91.2906 25.7205 91.0882 25.8537 90.9355 26.0277C90.7863 26.1982 90.7117 26.4254 90.7117 26.7095C90.7117 27.1037 90.8573 27.402 91.1485 27.6044C91.4397 27.8033 91.8108 27.9027 92.2618 27.9027ZM98.0746 29V20.8182H99.614V22.1179H99.6992C99.8484 21.6776 100.111 21.3313 100.488 21.0792C100.868 20.8235 101.297 20.6957 101.777 20.6957C101.876 20.6957 101.993 20.6992 102.128 20.7063C102.267 20.7134 102.375 20.7223 102.453 20.733V22.2564C102.389 22.2386 102.276 22.2191 102.112 22.1978C101.949 22.1729 101.786 22.1605 101.622 22.1605C101.246 22.1605 100.91 22.2404 100.615 22.4002C100.324 22.5565 100.093 22.7749 99.9229 23.0554C99.7525 23.3324 99.6673 23.6484 99.6673 24.0036V29H98.0746Z" fill="#3F4652"/><defs><linearGradient id="logo-grad-2" x1="14" y1="0" x2="14" y2="16" gradientUnits="userSpaceOnUse"><stop stop-color="#FF1950"/><stop offset="1" stop-color="#FF7394"/></linearGradient></defs></svg><button class="plus-btn" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M13 8.6V17.4M8.6 13H17.4" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+    <div>
+      <div class="mini-head">
+        <span class="mini-title" id="miniTitle"></span>
+        <span><button class="icon-btn" data-act="mini-prev" aria-label="Предыдущий месяц"><svg class="i" viewBox="0 0 16 16"><path d="M10 3.5L5.5 8l4.5 4.5"/></svg></button><button class="icon-btn" data-act="mini-next" aria-label="Следующий месяц"><svg class="i" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button></span>
+      </div>
+      <div class="mini-grid" id="miniGrid"></div>
+    </div>
+    <label class="field" for="peopleInput"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="peopleInput" placeholder="Добавить людей" autocomplete="off"></label>
+    <div class="cal-group">
+      <h3>Мои календари</h3>
+      <label class="cal-item"><input type="checkbox" class="cb" id="cal-work" data-cal="work" checked><span class="dot" style="background:var(--work)"></span>Рабочий календарь</label>
+      <label class="cal-item"><input type="checkbox" class="cb" id="cal-personal" data-cal="personal" checked><span class="dot" style="background:var(--personal)"></span>Личный календарь</label>
+    </div>
+    <div class="cal-group">
+      <h3>Общие календари</h3>
+      <div id="sharedList"><div class="muted" style="font-size:12px;padding:2px">Введите имя в поле «Добавить людей» и нажмите Enter</div></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="top-left">
+      <button class="plus-btn top-plus" data-act="create" aria-label="Создать событие"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M13 8.6V17.4M8.6 13H17.4" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="plus-btn collapse-btn" data-act="toggle-side" aria-label="Скрыть боковое меню" title="Скрыть боковое меню"><svg viewBox="0 0 26 26" width="26" height="26" fill="none" aria-hidden="true"><path d="M7 13H19M10 10L7 13L10 16" stroke="#323232" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <label class="field" for="search"><svg class="i" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5l3 3"/></svg><input id="search" placeholder="Поиск по событиям" autocomplete="off"></label>
+      </div>
+      <div class="top-right" style="position:relative">
+        <button class="icon-btn outlined" data-act="bell" aria-label="Уведомления"><svg class="i" viewBox="0 0 16 16"><path d="M4 11V7a4 4 0 018 0v4l1 1.5H3L4 11zM6.5 14h3"/></svg></button>
+        <div class="sep"></div>
+        <div class="avatar" aria-label="Профиль">АК</div>
+        <div class="pop hidden" id="bellPop"></div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="period">
+        <button class="icon-btn" data-act="prev" aria-label="Назад"><svg class="i" viewBox="0 0 16 16"><path d="M10 3.5L5.5 8l4.5 4.5"/></svg></button>
+        <h1 id="periodTitle" class="tabnum"></h1>
+        <button class="icon-btn" data-act="next" aria-label="Вперёд"><svg class="i" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button>
+      </div>
+      <div class="tools">
+        <button class="btn btn-outline" data-act="today">Сегодня</button>
+        <button class="btn btn-outline" id="viewBtn" data-act="view-menu" aria-haspopup="menu"><span id="viewLabel">Неделя</span><svg class="i" viewBox="0 0 16 16"><path d="M4.5 6.5L8 10l3.5-3.5"/></svg></button>
+        <div class="menu hidden" id="viewMenu" role="menu" style="right:0;top:34px">
+          <button role="menuitemradio" data-view="day">День</button>
+          <button role="menuitemradio" data-view="week">Неделя</button>
+          <button role="menuitemradio" data-view="month">Месяц</button>
+        </div>
+      </div>
+    </div>
+    <div class="m-header">
+      <h1 id="mTitle"></h1>
+      <button class="icon-btn" data-act="today" aria-label="Сегодня"><svg class="i" viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="13" rx="2.5"/><path d="M3 8h14"/><circle cx="10" cy="12.5" r="1.2" fill="currentColor" stroke="none"/></svg></button>
+      <button class="icon-btn" data-act="create" aria-label="Создать событие"><svg class="i" viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg></button>
+    </div>
+    <div class="view" id="view"></div>
+    <nav class="tabbar" role="tablist">
+      <button role="tab" data-view="month"><svg class="i" viewBox="0 0 20 20"><rect x="2.75" y="3.75" width="14.5" height="13.5" rx="2.5"/><path d="M2.75 7.75h14.5"/><circle cx="6.5" cy="11" r=".9" fill="currentColor"/><circle cx="10" cy="11" r=".9" fill="currentColor"/><circle cx="13.5" cy="11" r=".9" fill="currentColor"/><circle cx="6.5" cy="14" r=".9" fill="currentColor"/><circle cx="10" cy="14" r=".9" fill="currentColor"/></svg>Месяц</button>
+      <button role="tab" data-view="three"><svg class="i" viewBox="0 0 20 20"><rect x="2.75" y="3.75" width="14.5" height="13.5" rx="2.5"/><path d="M2.75 7.75h14.5M7.5 10.5v4M10 10.5v4M12.5 10.5v4"/></svg>3 дня</button>
+      <button role="tab" data-view="day"><svg class="i" viewBox="0 0 20 20"><rect x="2.75" y="3.75" width="14.5" height="13.5" rx="2.5"/><path d="M2.75 7.75h14.5M8.5 11l1.5-1v4.5"/></svg>1 день</button>
+    </nav>
+  </main>
+</div>
+
+<template id="modalTpl">
+<div class="backdrop" data-act="close-bg">
+  <form class="sheet" id="evForm" role="dialog" aria-modal="true" aria-labelledby="evTitle" novalidate>
+    <div class="handle"></div>
+    <div class="m-actions"><button type="button" class="icon-btn hidden" data-act="delete" id="delBtn" aria-label="Удалить событие" title="Удалить событие"><svg class="i i20" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 6h12M8 6V4.5h4V6M5.5 6l.8 10a1.5 1.5 0 001.5 1.4h4.4a1.5 1.5 0 001.5-1.4l.8-10M8.5 9v5M11.5 9v5"/></svg></button><button type="button" class="icon-btn" data-act="close" aria-label="Закрыть"><svg class="i i20" viewBox="0 0 20 20"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button></div>
+    <div class="title-row">
+      <svg class="i i20" viewBox="0 0 20 20" style="width:24px;height:24px;color:var(--text-2)"><circle cx="10" cy="10" r="7.25"/><path d="M7.5 12c.6.8 1.5 1.25 2.5 1.25s1.9-.45 2.5-1.25"/><circle cx="7.75" cy="8.25" r=".6" fill="currentColor"/><circle cx="12.25" cy="8.25" r=".6" fill="currentColor"/></svg>
+      <input id="evTitle" placeholder="Придумайте название" autocomplete="off">
+    </div>
+    <div class="row">
+      <svg class="i i20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.25"/><path d="M10 6v4l2.5 1.5"/></svg>
+      <div class="when grow">
+        <label class="date-btn" for="evDate"><span id="evDateLabel"></span><input type="date" id="evDate" aria-label="Дата"></label>
+        <span id="timeWrap" class="tabnum"><select class="sel" id="evStart" aria-label="Начало"></select> — <select class="sel" id="evEnd" aria-label="Конец"></select></span>
+        <label class="check" for="evAllDay"><input type="checkbox" class="cb" id="evAllDay">Весь день</label>
+      </div>
+    </div>
+    <div class="row">
+      <svg class="i i20" viewBox="0 0 20 20"><path d="M4 9a6 6 0 0110.5-3.5l1 1M15.5 3.5v3h-3M16 11a6 6 0 01-10.5 3.5l-1-1M4.5 16.5v-3h3"/></svg>
+      <select class="sel" id="evRepeat" aria-label="Повтор"><option value="none">Не повторять</option><option value="daily">Каждый день</option><option value="weekly">Каждую неделю</option><option value="monthly">Каждый месяц</option></select>
+    </div>
+    <div class="row"><svg class="i i20" viewBox="0 0 20 20"><circle cx="8" cy="7" r="2.75"/><path d="M3 16c.6-2.4 2.6-4 5-4s4.4 1.6 5 4"/><circle cx="14" cy="7.5" r="2"/><path d="M14.5 12c1.4.3 2.4 1.4 2.75 3"/></svg><input class="plain" id="evGuests" placeholder="Выберите участников" autocomplete="off"></div>
+    <div class="row"><svg class="i i20" viewBox="0 0 20 20"><path d="M10 17.5s5.5-4.6 5.5-9a5.5 5.5 0 00-11 0c0 4.4 5.5 9 5.5 9z"/><circle cx="10" cy="8.5" r="2"/></svg><input class="plain" id="evPlace" placeholder="Укажите место" autocomplete="off"></div>
+    <div class="row"><svg class="i i20" viewBox="0 0 20 20"><rect x="2.75" y="5.25" width="10.5" height="9.5" rx="2"/><path d="M13.25 9l4-2.25v6.5l-4-2.25"/></svg><input class="plain" id="evLink" placeholder="Ссылка на звонок" autocomplete="off"><button type="button" class="link-act" data-act="make-link">Создать</button></div>
+    <div class="row" style="align-items:flex-start"><svg class="i i20" viewBox="0 0 20 20" style="margin-top:6px"><rect x="4.25" y="2.75" width="11.5" height="14.5" rx="2"/><path d="M7.5 7h5M7.5 10h5M7.5 13h3"/></svg><textarea class="plain" id="evDesc" rows="1" placeholder="Добавьте описание или заметку"></textarea></div>
+    <div class="row">
+      <svg class="i i20" viewBox="0 0 20 20"><path d="M15.5 9.5l-5.6 5.6a3.5 3.5 0 01-5-5l6.1-6.1a2.3 2.3 0 013.3 3.3l-6 6a1.2 1.2 0 01-1.7-1.7l5.4-5.4"/></svg>
+      <div class="grow"><label for="evFiles" style="cursor:pointer" id="filesLabel">Прикрепите файлы</label><input type="file" id="evFiles" multiple class="hidden"><div class="files" id="filesList"></div></div>
+    </div>
+    <div class="row">
+      <span style="width:20px;display:grid;place-items:center"><span class="dot" id="calDot" style="width:10px;height:10px"></span></span>
+      <select class="sel" id="evCal" aria-label="Календарь"><option value="work">Рабочий</option><option value="personal">Личный</option></select>
+      <span style="flex:1"></span>
+      <span style="position:relative"><button type="button" class="color-chip" id="colorChip" data-act="swatches" aria-haspopup="true">Цвет события <svg class="i" viewBox="0 0 16 16" style="width:14px;height:14px"><path d="M4.5 6.5L8 10l3.5-3.5"/></svg></button><div class="swatches hidden" id="swatches"></div></span>
+    </div>
+    <div class="section-t">Уведомления</div>
+    <div id="reminders"></div>
+    <div class="row"><svg class="i i20" viewBox="0 0 20 20"><path d="M10 4.5v11M4.5 10h11"/></svg><button type="button" data-act="add-reminder" style="color:var(--text-2);font-size:15px">Добавить напоминание</button></div>
+    <div id="busyBox"></div>
+    <div class="footer">
+      <button type="submit" class="btn btn-brand btn-l">Сохранить</button>
+      <button type="button" class="btn btn-normal btn-l" data-act="busy">Занятость участников</button>
+    </div>
+    <div class="hint-line hidden" id="seriesHint">Изменения применятся ко всей серии повторов.</div>
+  </form>
+</div>
+</template>
+
+<script>
+(()=>{
+// ---------- dates ----------
+const TODAY=new Date(2027,0,6,10,20); // демо-«сейчас», как в макетах
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const MONTHS_G=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const MONTHS_S=['янв.','февр.','марта','апр.','мая','июня','июля','авг.','сент.','окт.','нояб.','дек.'];
+const WD=['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+const WD_L=['пн','вт','ср','чт','пт','сб','вс'];
+const pad=n=>String(n).padStart(2,'0');
+const key=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseKey=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(d,n)=>{const r=new Date(d);r.setDate(r.getDate()+n);return r};
+const dow=d=>(d.getDay()+6)%7;
+const startOfWeek=d=>addDays(new Date(d.getFullYear(),d.getMonth(),d.getDate()),-dow(d));
+const sameDay=(a,b)=>key(a)===key(b);
+const toMin=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+const fromMin=m=>`${pad(Math.floor(m/60))}:${pad(m%60)}`;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ---------- data ----------
+const COLORS={work:'#5F99FF',personal:'#FFBE5C'};
+const SWATCHES=['#5F99FF','#8F52CC','#30AA6E','#FFBE5C','#FF7A33','#E5343A','#FF1950','#7E8A99'];
+let uid=1; const mk=o=>({id:'e'+(uid++),allDay:false,repeat:'none',guests:'',place:'',link:'',desc:'',files:[],color:null,reminders:[{ch:'Почта',off:15}],...o});
+const SEED=[
+ mk({title:'Новогодний вечер',date:'2026-12-31',allDay:true,cal:'personal'}),
+ mk({title:'Новый год',date:'2027-01-01',allDay:true,cal:'personal'}),
+ mk({title:'Планёрка',date:'2027-01-04',start:'09:00',end:'10:00',cal:'work',repeat:'weekly'}),
+ mk({title:'Ревью дизайна',date:'2027-01-05',start:'10:30',end:'12:00',cal:'work',repeat:'weekly',link:'https://telemost.example/review'}),
+ mk({title:'Спортзал',date:'2027-01-06',start:'08:00',end:'09:00',cal:'personal',repeat:'weekly',place:'Фитнес на Садовой'}),
+ mk({title:'Стендап',date:'2027-01-06',start:'09:30',end:'10:00',cal:'work'}),
+ mk({title:'Синк команды',date:'2027-01-06',start:'11:00',end:'12:00',cal:'work',guests:'Аня, Миша, Олег'}),
+ mk({title:'Звонок с подрядчиком',date:'2027-01-06',start:'11:30',end:'12:30',cal:'personal'}),
+ mk({title:'Обед',date:'2027-01-06',start:'13:00',end:'14:00',cal:'personal'}),
+ mk({title:'Работа над макетами',date:'2027-01-06',start:'14:00',end:'17:00',cal:'work',desc:'Сетка недели, месяц, мобильная версия'}),
+ mk({title:'Звонок маме',date:'2027-01-06',start:'19:00',end:'19:30',cal:'personal'}),
+ mk({title:'Созвон с клиентом',date:'2027-01-07',start:'11:00',end:'12:30',cal:'work'}),
+ mk({title:'Завтрак с Аней',date:'2027-01-08',start:'09:30',end:'10:30',cal:'personal'}),
+ mk({title:'Йога',date:'2027-01-09',start:'10:00',end:'11:30',cal:'personal',repeat:'weekly'}),
+ mk({title:'Релиз 2.0',date:'2027-01-15',allDay:true,cal:'work'}),
+ mk({title:'Синк команды',date:'2027-01-20',start:'11:00',end:'12:00',cal:'work'}),
+ mk({title:'Интервью',date:'2027-01-20',start:'14:00',end:'15:00',cal:'work'}),
+ mk({title:'Демо',date:'2027-01-20',start:'16:00',end:'17:00',cal:'work'}),
+ mk({title:'ДР мамы',date:'2027-01-22',allDay:true,cal:'personal'}),
+ mk({title:'Конференция',date:'2027-01-26',endDate:'2027-01-28',allDay:true,cal:'work',place:'Экспоцентр'}),
+ mk({title:'Ретро',date:'2027-01-29',start:'17:00',end:'18:00',cal:'work'}),
+];
+const STORE='calendar-proto-v1';
+let events; try{events=JSON.parse(localStorage.getItem(STORE))}catch(e){}
+if(!Array.isArray(events)) events=SEED;
+uid=events.reduce((m,e)=>Math.max(m,+String(e.id).slice(1)||0),0)+1;
+const save=()=>{try{localStorage.setItem(STORE,JSON.stringify(events))}catch(e){}};
+
+const state={view:'week',cursor:new Date(TODAY),sel:new Date(TODAY),mini:new Date(TODAY.getFullYear(),TODAY.getMonth(),1),hidden:new Set(),q:'',shared:[]};
+const colorOf=e=>e.color||COLORS[e.cal];
+
+// occurrences of events for one day
+function occursOn(e,d){
+  const s=parseKey(e.date), k=key(d);
+  if(e.allDay && e.endDate){ return k>=e.date && k<=e.endDate }
+  if(d<s) return false;
+  switch(e.repeat){
+    case 'daily': return true;
+    case 'weekly': return dow(d)===dow(s);
+    case 'monthly': return d.getDate()===s.getDate();
+    default: return k===e.date;
+  }
+}
+const dayEvents=d=>events.filter(e=>!state.hidden.has(e.cal)&&occursOn(e,d)).sort((a,b)=>(b.allDay-a.allDay)||((a.start||'')>(b.start||'')?1:-1));
+const matches=e=>!state.q||e.title.toLowerCase().includes(state.q);
+
+// ---------- layout mode ----------
+const mode=()=>innerWidth<=640?'mobile':innerWidth<=1024?'tablet':'desktop';
+function normView(){
+  const m=mode();
+  if(m==='mobile'&&state.view==='week') state.view='three';
+  if(m!=='mobile'&&state.view==='three') state.view='week';
+}
+const VIEW_NAMES={day:'День',week:'Неделя',month:'Месяц',three:'3 дня'};
+const HASH={day:'day',week:'week',month:'month',three:'three-days'};
+
+// ---------- render ----------
+const $=s=>document.querySelector(s);
+const viewEl=$('#view');
+function render(keepScroll){
+  normView();
+  if(typeof closeView==='function'&&view) closeView();
+  const prevScroll=viewEl.querySelector('.tl-scroll')?.scrollTop;
+  const c=state.cursor;
+  // titles
+  let t;
+  if(state.view==='day') t=`${c.getDate()} ${MONTHS_G[c.getMonth()]} ${c.getFullYear()}`;
+  else if(state.view==='week'){const s=startOfWeek(c),e=addDays(s,6); t=s.getMonth()===e.getMonth()?`${MONTHS[s.getMonth()]} ${s.getFullYear()}`:`${MONTHS_S[s.getMonth()]} – ${MONTHS_S[e.getMonth()]} ${e.getFullYear()}`; t=t.charAt(0).toUpperCase()+t.slice(1)}
+  else t=`${MONTHS[c.getMonth()]} ${c.getFullYear()}`;
+  $('#periodTitle').textContent=t;
+  $('#mTitle').textContent=`${MONTHS[c.getMonth()]} ${c.getFullYear()}`;
+  $('#viewLabel').textContent=VIEW_NAMES[state.view];
+  document.querySelectorAll('#viewMenu [data-view]').forEach(b=>b.setAttribute('aria-checked',b.dataset.view===state.view));
+  document.querySelectorAll('.tabbar [data-view]').forEach(b=>b.setAttribute('aria-selected',b.dataset.view===state.view));
+  if(location.hash.slice(1)!==HASH[state.view]) history.replaceState(null,'','#'+HASH[state.view]);
+  // body
+  if(state.view==='month') viewEl.innerHTML= mode()==='mobile'?mobileMonth():monthView();
+  else if(state.view==='week') viewEl.innerHTML=timeline([...Array(7)].map((_,i)=>addDays(startOfWeek(c),i)));
+  else if(state.view==='three') viewEl.innerHTML=timeline([0,1,2].map(i=>addDays(c,i)));
+  else viewEl.innerHTML=(mode()==='mobile'?weekStrip():'')+timeline([new Date(c)]);
+  const sc=viewEl.querySelector('.tl-scroll');
+  if(sc) sc.scrollTop = keepScroll&&prevScroll!=null ? prevScroll : 7.75*48;
+  renderMini();
+}
+
+function timeline(days){
+  const n=days.length, m=mode();
+  const head = n>1||m!=='mobile' ? `<div class="tl-row tl-head" style="--n:${n}"><div class="tl-tz">GMT+3</div>${days.map(d=>`<button class="day-h${sameDay(d,TODAY)?' today':''}" data-goto-day="${key(d)}">${WD[dow(d)]} <b>${d.getDate()}</b></button>`).join('')}</div>`:'';
+  const ad=days.map(d=>dayEvents(d).filter(e=>e.allDay));
+  const allday = ad.some(a=>a.length)?`<div class="tl-row tl-allday" style="--n:${n}"><div class="ad-label">весь день</div>${ad.map((list,i)=>`<div class="ad-cell">${list.map(e=>chip(e,days[i],true)).join('')}</div>`).join('')}</div>`:'';
+  const hours=[...Array(23)].map((_,i)=>`<span style="top:calc(var(--hour)*${i+1})">${pad(i+1)}:00</span>`).join('');
+  const cols=days.map(d=>{
+    const list=dayEvents(d).filter(e=>!e.allDay);
+    const laid=layout(list);
+    const nowLine=sameDay(d,TODAY)?`<div class="now" style="top:${(TODAY.getHours()*60+TODAY.getMinutes())*0.8}px"></div>`:'';
+    return `<div class="tl-col${dow(d)>4?' weekend':''}" data-col="${key(d)}">${laid.map(({e,lane,lanes})=>{
+      const s=toMin(e.start), en=Math.max(toMin(e.end),s+15), h=(en-s)*0.8;
+      const step=100/lanes, left=step*lane, w=lanes>1?Math.min(100-left,step*1.7):100; const short=en-s<=30;
+      return `<button class="ev${short?' short':''}${lanes>1?' stacked':''}${matches(e)?'':' dim'}" style="--c:${colorOf(e)};top:${s*0.8+1}px;height:${h-2}px;left:calc(${left}% + 2px);width:calc(${w}% - 4px);z-index:${1+lane}" data-ev="${e.id}" data-date="${key(d)}"><span class="t">${esc(e.title)}</span><span class="s tabnum">${e.start} – ${e.end}</span></button>`}).join('')}${nowLine}</div>`;
+  }).join('');
+  return `<div class="tl">${head}${allday}<div class="tl-scroll"><div class="tl-row tl-grid" style="--n:${n}"><div class="tl-hours">${hours}</div>${cols}</div></div></div>`;
+}
+// overlap lanes
+function layout(list){
+  const items=list.map(e=>({e,s:toMin(e.start),en:Math.max(toMin(e.end),toMin(e.start)+15)})).sort((a,b)=>a.s-b.s||b.en-a.en);
+  const out=[]; let cluster=[], clusterEnd=-1;
+  const flush=()=>{ const lanesEnd=[]; cluster.forEach(it=>{ let l=lanesEnd.findIndex(x=>x<=it.s); if(l<0){l=lanesEnd.length;lanesEnd.push(0)} lanesEnd[l]=it.en; it.lane=l; }); cluster.forEach(it=>out.push({e:it.e,lane:it.lane,lanes:lanesEnd.length})); cluster=[]; };
+  items.forEach(it=>{ if(it.s>=clusterEnd&&cluster.length) flush(); cluster.push(it); clusterEnd=Math.max(clusterEnd,it.en); });
+  flush(); return out;
+}
+function chip(e,d,forceFill){
+  const fill=e.allDay||forceFill;
+  return `<button class="chip${fill?' fill':''}${matches(e)?'':' dim'}" style="--c:${colorOf(e)}" data-ev="${e.id}" data-date="${key(d)}">${fill?'':`<span class="cd"></span><span class="ct tabnum">${e.start}</span>`}<span class="cn">${esc(e.title)}</span></button>`;
+}
+function monthDays(c){
+  const first=new Date(c.getFullYear(),c.getMonth(),1), s=startOfWeek(first);
+  const last=new Date(c.getFullYear(),c.getMonth()+1,0);
+  const weeks=Math.ceil((dow(first)+last.getDate())/7);
+  return [...Array(weeks*7)].map((_,i)=>addDays(s,i));
+}
+function monthView(){
+  const c=state.cursor, days=monthDays(c);
+  return `<div class="month"><div class="month-wd">${WD.map(w=>`<span>${w.charAt(0)+w.slice(1).toLowerCase()}</span>`).join('')}</div><div class="month-grid">${days.map(d=>{
+    const list=dayEvents(d), other=d.getMonth()!==c.getMonth();
+    const shown=list.slice(0,3), rest=list.length-shown.length;
+    return `<div class="m-cell${other?' other':''}${dow(d)>4?' weekend':''}${sameDay(d,TODAY)?' today':''}" data-cell="${key(d)}" role="button" tabindex="0" aria-label="${d.getDate()} ${MONTHS_G[d.getMonth()]}"><span class="m-num tabnum">${d.getDate()}</span>${shown.map(e=>chip(e,d)).join('')}${rest>0?`<button class="more" data-goto-day="${key(d)}">Ещё ${rest}</button>`:''}</div>`}).join('')}</div></div>`;
+}
+function mobileMonth(){
+  const c=state.cursor, days=monthDays(c), sel=state.sel;
+  const list=dayEvents(sel);
+  return `<div class="mm-wd">${WD.map(w=>`<span>${w}</span>`).join('')}</div><div class="mm-grid">${days.map(d=>`<button class="mm-day tabnum${d.getMonth()!==c.getMonth()?' other':''}${sameDay(d,TODAY)?' today':''}${sameDay(d,sel)?' picked':''}" data-pick="${key(d)}"><i class="${dayEvents(d).length?'on':''}"></i>${d.getDate()}</button>`).join('')}</div>
+  <div class="grab"></div>
+  <div class="agenda"><div class="agenda-day">${WD_L[dow(sel)]}, ${sel.getDate()} ${MONTHS_G[sel.getMonth()]}</div><div class="agenda-card">${list.length?list.map(e=>`<button class="agenda-item${matches(e)?'':' dim'}" style="--c:${colorOf(e)}" data-ev="${e.id}" data-date="${key(sel)}"><span><span class="at">${esc(e.title)}</span><span class="as tabnum">${e.allDay?'Весь день':`${e.start}–${e.end}`}</span></span><span class="ad"></span></button>`).join(''):`<div class="empty">Событий нет. <button class="link-act" data-act="create" style="font-size:14px">Создать</button></div>`}</div></div>`;
+}
+function weekStrip(){
+  const s=startOfWeek(state.cursor);
+  return `<div class="week-strip"><div class="mm-wd" style="padding:0">${WD.map(w=>`<span>${w}</span>`).join('')}</div><div class="ws-row">${[...Array(7)].map((_,i)=>{const d=addDays(s,i);return `<button class="mm-day tabnum${sameDay(d,TODAY)?' today':''}${sameDay(d,state.cursor)?' picked':''}" data-strip="${key(d)}"><i class="${dayEvents(d).length?'on':''}"></i>${d.getDate()}</button>`}).join('')}</div></div>`;
+}
+function renderMini(){
+  const m=state.mini; $('#miniTitle').textContent=`${MONTHS[m.getMonth()]} ${m.getFullYear()}`;
+  const days=monthDays(m); while(days.length<42) days.push(addDays(days[days.length-1],1));
+  $('#miniGrid').innerHTML=WD.map(w=>`<span>${w.charAt(0)+w.slice(1).toLowerCase()}</span>`).join('')+days.map(d=>`<button class="mini-day tabnum${d.getMonth()!==m.getMonth()?' other':''}${sameDay(d,TODAY)?' today':sameDay(d,state.cursor)?' picked':''}" data-mini="${key(d)}">${d.getDate()}</button>`).join('');
+}
+
+// ---------- navigation ----------
+function shift(dir){
+  const c=state.cursor;
+  if(state.view==='month'){ state.cursor=new Date(c.getFullYear(),c.getMonth()+dir,1); state.sel=new Date(state.cursor); }
+  else state.cursor=addDays(c,dir*({week:7,three:3,day:1}[state.view]));
+  state.mini=new Date(state.cursor.getFullYear(),state.cursor.getMonth(),1);
+  render();
+}
+function goto(d,view){ state.cursor=new Date(d); state.sel=new Date(d); state.mini=new Date(d.getFullYear(),d.getMonth(),1); if(view) state.view=view; render(); }
+
+// ---------- modal ----------
+let modal=null, draft=null;
+const times=[...Array(96)].map((_,i)=>fromMin(i*15));
+function openModal(opts={}){
+  closeModal();
+  const node=$('#modalTpl').content.firstElementChild.cloneNode(true);
+  document.body.appendChild(node); modal=node;
+  const f=node.querySelector('form');
+  const editing=opts.id?events.find(e=>e.id===opts.id):null;
+  const base=new Date(state.view==='month'&&mode()!=='mobile'?state.cursor:state.cursor);
+  const startMin=opts.start!=null?opts.start:Math.min(Math.ceil((TODAY.getHours()*60+TODAY.getMinutes())/30)*30,22*60);
+  draft=editing?JSON.parse(JSON.stringify(editing)):mk({title:'',date:opts.date||key(sameDay(base,TODAY)||state.view!=='month'?base:state.sel),start:fromMin(startMin),end:fromMin(Math.min(startMin+60,23*60+45)),cal:'work'});
+  if(!editing&&opts.date) draft.date=opts.date;
+  uid--; if(editing) uid++; // mk() increments; keep ids tidy when not saved
+  if(!editing) draft.id='e'+(uid++);
+  const q=s=>node.querySelector(s);
+  q('#evTitle').value=draft.title;
+  q('#evDate').value=draft.date;
+  ['#evStart','#evEnd'].forEach(s=>q(s).innerHTML=times.map(t=>`<option>${t}</option>`).join(''));
+  q('#evStart').value=draft.start||'12:00'; q('#evEnd').value=draft.end||'13:00';
+  q('#evAllDay').checked=draft.allDay; q('#evRepeat').value=draft.repeat;
+  q('#evGuests').value=draft.guests; q('#evPlace').value=draft.place; q('#evLink').value=draft.link; q('#evDesc').value=draft.desc;
+  q('#evCal').value=draft.cal;
+  q('#delBtn').classList.toggle('hidden',!editing);
+  q('#seriesHint').classList.toggle('hidden',!(editing&&editing.repeat!=='none'));
+  q('#swatches').innerHTML=SWATCHES.map(c=>`<button type="button" style="--c:${c}" data-swatch="${c}" aria-label="Цвет ${c}"></button>`).join('')+`<button type="button" style="--c:#fff;box-shadow:inset 0 0 0 1px var(--line-strong)" data-swatch="" aria-label="Цвет календаря" title="Как у календаря"></button>`;
+  syncModal(); renderFiles(); renderReminders();
+  f.addEventListener('submit',onSave);
+  f.addEventListener('input',onModalInput); f.addEventListener('change',onModalInput);
+  autoGrow(q('#evDesc'));
+  setTimeout(()=>q('#evTitle').focus(),30);
+}
+function syncModal(){
+  if(!modal) return; const q=s=>modal.querySelector(s);
+  const d=parseKey(draft.date);
+  q('#evDateLabel').textContent=`${WD_L[dow(d)]}, ${d.getDate()} ${MONTHS_S[d.getMonth()]}`;
+  q('#timeWrap').classList.toggle('hidden',draft.allDay);
+  const c=colorOf(draft); q('#calDot').style.background=COLORS[draft.cal]; q('#colorChip').style.setProperty('--c',c);
+  q('#swatches').querySelectorAll('[data-swatch]').forEach(b=>b.setAttribute('aria-pressed',(b.dataset.swatch||null)===draft.color));
+}
+function onModalInput(ev){
+  const q=s=>modal.querySelector(s); const t=ev.target;
+  draft.title=q('#evTitle').value; draft.guests=q('#evGuests').value; draft.place=q('#evPlace').value; draft.link=q('#evLink').value; draft.desc=q('#evDesc').value;
+  draft.allDay=q('#evAllDay').checked; draft.repeat=q('#evRepeat').value; draft.cal=q('#evCal').value;
+  if(q('#evDate').value) draft.date=q('#evDate').value;
+  if(t.id==='evStart'){ const dur=toMin(draft.end)-toMin(draft.start); draft.start=t.value; draft.end=fromMin(Math.min(toMin(t.value)+Math.max(dur,15),23*60+45)); q('#evEnd').value=draft.end; }
+  if(t.id==='evEnd'){ draft.end=t.value; if(toMin(draft.end)<=toMin(draft.start)){ draft.end=fromMin(Math.min(toMin(draft.start)+15,23*60+45)); t.value=draft.end; } }
+  if(t.id==='evFiles'){ draft.files=[...draft.files,...[...t.files].map(f=>f.name)]; renderFiles(); }
+  if(t.closest&&t.closest('[data-rem]')) readReminders();
+  if(t.id==='evDesc') autoGrow(t);
+  modal.querySelector('#busyBox').innerHTML='';
+  syncModal();
+}
+const autoGrow=t=>{t.style.height='auto';t.style.height=t.scrollHeight+'px'};
+function renderFiles(){ const q=s=>modal.querySelector(s); q('#filesList').innerHTML=draft.files.map(n=>`<span class="file-pill">${esc(n)}</span>`).join(''); q('#filesLabel').textContent=draft.files.length?'Добавить ещё файлы':'Прикрепите файлы'; q('#filesLabel').style.color=draft.files.length?'var(--text)':''; }
+const OFFS=[[5,'за 5 мин.'],[10,'за 10 мин.'],[15,'за 15 мин.'],[30,'за 30 мин.'],[60,'за 1 час'],[1440,'за 1 день']];
+function renderReminders(){
+  modal.querySelector('#reminders').innerHTML=draft.reminders.map((r,i)=>`<div class="row" data-rem="${i}"><svg class="i i20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.25"/><path d="M7 10.2l2 2 4-4.2"/></svg><select class="sel" data-f="ch" aria-label="Канал">${['Почта','Пуш','SMS'].map(c=>`<option${c===r.ch?' selected':''}>${c}</option>`).join('')}</select><span style="flex:1"></span><select class="sel" data-f="off" aria-label="Когда">${OFFS.map(([v,l])=>`<option value="${v}"${v===r.off?' selected':''}>${l}</option>`).join('')}</select><button type="button" class="rm-x" data-act="rm-reminder" data-i="${i}" aria-label="Удалить напоминание"><svg class="i" viewBox="0 0 20 20"><path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/></svg></button></div>`).join('');
+}
+function readReminders(){ draft.reminders=[...modal.querySelectorAll('[data-rem]')].map(r=>({ch:r.querySelector('[data-f=ch]').value,off:+r.querySelector('[data-f=off]').value})); }
+function onSave(ev){
+  ev.preventDefault();
+  draft.title=draft.title.trim()||'(Без названия)';
+  if(draft.allDay){ delete draft.start; delete draft.end; } else { draft.start=draft.start||'12:00'; draft.end=draft.end||'13:00'; delete draft.endDate; }
+  const i=events.findIndex(e=>e.id===draft.id);
+  if(i>=0) events[i]=draft; else events.push(draft);
+  save(); const d=parseKey(draft.date); const isNew=i<0; closeModal();
+  state.cursor=d; state.sel=d; state.mini=new Date(d.getFullYear(),d.getMonth(),1); render(true);
+  toast(isNew?'Событие создано':'Изменения сохранены');
+}
+function closeModal(){ if(modal){ modal.remove(); modal=null; draft=null; } }
+function busyCheck(){
+  const d=parseKey(draft.date);
+  const others=dayEvents(d).filter(e=>e.id!==draft.id);
+  const conflicts=draft.allDay?others:others.filter(e=>e.allDay||(toMin(e.start)<toMin(draft.end)&&toMin(e.end)>toMin(draft.start)));
+  const who=draft.guests.trim()?`Участники: ${esc(draft.guests)}. `:'';
+  modal.querySelector('#busyBox').innerHTML=conflicts.length?`<div class="busy warn">${who}В это время в ваших календарях: ${conflicts.map(e=>`<b>${esc(e.title)}</b>${e.allDay?' (весь день)':` ${e.start}–${e.end}`}`).join(', ')}.</div>`:`<div class="busy">${who}В это время в ваших календарях ничего нет.</div>`;
+}
+
+
+// ---------- event view ----------
+const WD_FULL=['Понедельник','Вторник','Среда','Четверг','Пятница','Суббота','Воскресенье'];
+const WD_PL=['понедельникам','вторникам','средам','четвергам','пятницам','субботам','воскресеньям'];
+const plural=(n,a,b,c)=>{const m10=n%10,m100=n%100;return m10===1&&m100!==11?a:m10>=2&&m10<=4&&(m100<10||m100>=20)?b:c};
+const GCOL=['#30AA6E','#7E8A99','#8F52CC','#FF7A33','#5F99FF','#E5343A'];
+let view=null, viewCtx=null;
+const ICONS={
+ pencil:'<path d="M12.5 4.5l3 3L7 16H4v-3l8.5-8.5zM11 6l3 3"/>',
+ trash:'<path d="M4 6h12M8 6V4.5h4V6M5.5 6l.8 10a1.5 1.5 0 001.5 1.4h4.4a1.5 1.5 0 001.5-1.4l.8-10M8.5 9v5M11.5 9v5"/>',
+ x:'<path d="M5.5 5.5l9 9M14.5 5.5l-9 9"/>',
+ video:'<rect x="2.75" y="5.25" width="10.5" height="9.5" rx="2"/><path d="M13.25 9l4-2.25v6.5l-4-2.25"/>',
+ pin:'<path d="M10 17.5s5.5-4.6 5.5-9a5.5 5.5 0 00-11 0c0 4.4 5.5 9 5.5 9z"/><circle cx="10" cy="8.5" r="2"/>',
+ people:'<circle cx="8" cy="7" r="2.75"/><path d="M3 16c.6-2.4 2.6-4 5-4s4.4 1.6 5 4"/><circle cx="14" cy="7.5" r="2"/><path d="M14.5 12c1.4.3 2.4 1.4 2.75 3"/>',
+ note:'<rect x="4.25" y="2.75" width="11.5" height="14.5" rx="2"/><path d="M7.5 7h5M7.5 10h5M7.5 13h3"/>',
+ clip:'<path d="M15.5 9.5l-5.6 5.6a3.5 3.5 0 01-5-5l6.1-6.1a2.3 2.3 0 013.3 3.3l-6 6a1.2 1.2 0 01-1.7-1.7l5.4-5.4"/>',
+ bell:'<path d="M5.5 13.5V9a4.5 4.5 0 019 0v4.5l1.25 1.75H4.25L5.5 13.5zM8.25 17.25h3.5"/>'
+};
+const ic=n=>`<svg class="i i20" viewBox="0 0 20 20" aria-hidden="true">${ICONS[n]}</svg>`;
+function viewHTML(e,dk){
+  const d=parseKey(dk), s=parseKey(e.date);
+  let when=`${WD_FULL[dow(d)]}, ${d.getDate()} ${MONTHS_G[d.getMonth()]}`;
+  if(e.allDay&&e.endDate){ const en=parseKey(e.endDate); when=`${s.getDate()} ${MONTHS_G[s.getMonth()]} – ${en.getDate()} ${MONTHS_G[en.getMonth()]} · весь день`; }
+  else when+= e.allDay?' · весь день':` · ${e.start} – ${e.end}`;
+  const rep={daily:'Каждый день',weekly:`Каждую неделю по ${WD_PL[dow(s)]}`,monthly:`Каждый месяц, ${s.getDate()} числа`}[e.repeat]||'';
+  const names=(e.guests||'').split(/[,;]/).map(x=>x.trim()).filter(Boolean);
+  const me=e.rsvp||'yes';
+  const people=[{ini:'АК',name:'Вы',st:'Организатор',c:'#FF1950'},...names.map((n,i)=>({ini:n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase(),name:n,st:'Ждём ответа',c:GCOL[i%GCOL.length]}))];
+  const yes=me==='yes'?1:0;
+  const offL=Object.fromEntries(OFFS);
+  const rem=(e.reminders||[]).map(r=>`${offL[r.off]?offL[r.off].replace(/^з/,'З'):r.off+' мин.'}, ${r.ch.toLowerCase()}`).join('<br>');
+  const calName=e.cal==='work'?'Рабочий календарь':'Личный календарь';
+  return `
+  <div class="v-actions">
+    <button class="icon-btn" data-act="v-edit" aria-label="Изменить">${ic('pencil')}</button>
+    <button class="icon-btn" data-act="v-delete" aria-label="Удалить">${ic('trash')}</button>
+    <button class="icon-btn" data-act="v-close" aria-label="Закрыть">${ic('x')}</button>
+  </div>
+  <div class="v-head"><span class="v-sq" style="--c:${colorOf(e)}"></span><div><h2 class="v-title" id="vTitle">${esc(e.title)}</h2><div class="v-when tabnum">${when}</div>${rep?`<div class="v-rep">${rep}</div>`:''}</div></div>
+  ${e.link?`<div class="v-row">${ic('video')}<div class="grow"><a class="btn btn-brand btn-l v-join" href="${esc(e.link)}" target="_blank" rel="noopener">Присоединиться к звонку</a><a class="v-link" href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.link.replace(/^https?:\/\//,''))}</a></div></div>`:''}
+  ${e.place?`<div class="v-row">${ic('pin')}<div class="grow">${esc(e.place)}</div></div>`:''}
+  ${names.length?`<div class="v-row">${ic('people')}<div class="grow"><div>${people.length} ${plural(people.length,'участник','участника','участников')}</div><div class="v-sub">${yes} — да, ${people.length-yes} — ждём ответа</div>${people.map(p=>`<div class="guest"><span class="av" style="--g:${p.c}">${esc(p.ini)}</span><span><span class="gn">${esc(p.name)}</span><br><span class="gs">${p.st}</span></span></div>`).join('')}</div></div>`:''}
+  ${e.desc?`<div class="v-row">${ic('note')}<div class="grow v-desc">${esc(e.desc)}</div></div>`:''}
+  ${e.files&&e.files.length?`<div class="v-row">${ic('clip')}<div class="grow files">${e.files.map(f=>`<span class="file-pill">${esc(f)}</span>`).join('')}</div></div>`:''}
+  ${rem?`<div class="v-row">${ic('bell')}<div class="grow">${rem}</div></div>`:''}
+  <div class="v-row"><span style="width:20px;display:grid;place-items:center;margin-top:4px"><span class="dot" style="width:10px;height:10px;background:${COLORS[e.cal]}"></span></span><div class="grow">${calName}</div></div>
+  <div id="vConfirm"></div>
+  ${names.length?`<div class="v-div"></div><div class="rsvp"><b>Пойдёте?</b><span class="opts">${[['yes','Да'],['no','Нет'],['maybe','Возможно']].map(([k,l])=>`<button data-rsvp="${k}" aria-pressed="${me===k}">${l}</button>`).join('')}</span></div>`:''}`;
+}
+function openView(id,dk,anchor){
+  closeView(); closeModal();
+  const e=events.find(x=>x.id===id); if(!e) return;
+  viewCtx={id,dk,anchor};
+  if(mode()==='mobile'){
+    view=document.createElement('div'); view.className='backdrop'; view.dataset.act='v-bg';
+    view.innerHTML=`<div class="sheet view-sheet" role="dialog" aria-modal="true" aria-labelledby="vTitle"><div class="handle"></div>${viewHTML(e,dk)}</div>`;
+    document.body.appendChild(view);
+  } else {
+    view=document.createElement('div'); view.className='vpop'; view.setAttribute('role','dialog'); view.setAttribute('aria-labelledby','vTitle');
+    view.innerHTML=viewHTML(e,dk); document.body.appendChild(view);
+    placeView();
+  }
+  anchor?.classList.add('draft');
+  view.querySelector('[data-act="v-close"]').focus({preventScroll:true});
+}
+function placeView(){
+  if(!view||!view.classList.contains('vpop')) return;
+  const a=viewCtx.anchor?.isConnected?viewCtx.anchor.getBoundingClientRect():null;
+  view.style.maxHeight=(innerHeight-24)+'px';
+  const w=view.offsetWidth,h=view.offsetHeight;
+  let x,y;
+  if(a){ x=a.right+12; if(x+w>innerWidth-12) x=a.left-12-w; if(x<12) x=Math.max(12,(innerWidth-w)/2); y=Math.min(Math.max(12,a.top-60),innerHeight-h-12); }
+  else { x=(innerWidth-w)/2; y=Math.max(12,(innerHeight-h)/2); }
+  view.style.left=Math.round(x)+'px'; view.style.top=Math.round(y)+'px';
+}
+function closeView(){ if(view){ view.remove(); view=null; } document.querySelectorAll('.ev.draft').forEach(n=>n.classList.remove('draft')); }
+function refreshView(){ if(!view||!viewCtx) return; const e=events.find(x=>x.id===viewCtx.id); if(!e) return closeView(); const host=view.classList.contains('vpop')?view:view.querySelector('.sheet'); const keep=host.querySelector('.handle'); host.innerHTML=(keep?'<div class="handle"></div>':'')+viewHTML(e,viewCtx.dk); placeView(); }
+function handleViewClick(t,act){
+  const e=events.find(x=>x.id===viewCtx.id);
+  if(act==='v-bg'&&t===view) return closeView();
+  if(act==='v-close') return closeView();
+  if(act==='v-edit'){ const id=viewCtx.id; closeView(); return openModal({id}); }
+  if(act==='v-delete'){
+    view.querySelector('#vConfirm').innerHTML=`<div class="confirm">${e.repeat!=='none'?'Удалить всю серию повторяющихся событий?':'Удалить это событие?'}<div class="row-btns"><button class="btn btn-l btn-brand" data-act="v-del-yes">Удалить</button><button class="btn btn-l btn-normal" data-act="v-del-no">Отмена</button></div></div>`; placeView(); return;
+  }
+  if(act==='v-del-no'){ view.querySelector('#vConfirm').innerHTML=''; placeView(); return; }
+  if(act==='v-del-yes'){ events=events.filter(x=>x.id!==e.id); save(); closeView(); render(true); return toast('Событие удалено'); }
+  const r=t.closest('[data-rsvp]'); if(r){ e.rsvp=r.dataset.rsvp; save(); refreshView(); toast({yes:'Вы пойдёте',no:'Вы не пойдёте',maybe:'Ответ: возможно'}[e.rsvp]); }
+}
+
+
+function setCollapsed(on){
+  $('#app').classList.toggle('collapsed',on);
+  const b=document.querySelector('.collapse-btn'); const l=on?'Показать боковое меню':'Скрыть боковое меню'; b.setAttribute('aria-label',l); b.title=l;
+  try{ localStorage.setItem('calendar-proto-collapsed',on?'1':'0') }catch(e){}
+}
+// ---------- misc ----------
+let toastT; function toast(msg){ document.querySelector('.toast')?.remove(); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; t.setAttribute('role','status'); document.body.appendChild(t); clearTimeout(toastT); toastT=setTimeout(()=>t.remove(),2200); }
+function bell(){
+  const pop=$('#bellPop'); if(!pop.classList.contains('hidden')){pop.classList.add('hidden');return}
+  const nowMin=TODAY.getHours()*60+TODAY.getMinutes();
+  const next=dayEvents(TODAY).filter(e=>!e.allDay&&toMin(e.start)>=nowMin).slice(0,3);
+  pop.innerHTML=`<h4>Сегодня дальше</h4>${next.length?next.map(e=>`<div style="display:flex;gap:8px;align-items:center;padding:4px 0"><span class="dot" style="width:8px;height:8px;background:${colorOf(e)}"></span><span class="tabnum muted">${e.start}</span>${esc(e.title)}</div>`).join(''):'<div class="muted">Больше событий нет</div>'}`;
+  pop.classList.remove('hidden');
+}
+function toggleSidebar(open){
+  const sb=$('#sidebar'); const on=open??!sb.classList.contains('open'); sb.classList.toggle('open',on);
+  document.querySelector('.scrim')?.remove();
+  if(on){ const s=document.createElement('div'); s.className='scrim'; s.dataset.act='scrim'; $('#app').appendChild(s); }
+}
+function closePopovers(except){ ['#viewMenu','#bellPop'].forEach(s=>{ if(s!==except) $(s).classList.add('hidden') }); modal?.querySelector('#swatches')?.classList.add('hidden'); }
+
+// ---------- events ----------
+document.addEventListener('click',ev=>{
+  const t=ev.target;
+  const act=t.closest('[data-act]')?.dataset.act;
+  if(view&&view.contains(t)) return handleViewClick(t,act);
+  if(view&&!t.closest('[data-ev]')) closeView();
+  if(modal&&modal.contains(t)){
+    if(act==='close-bg'&&t===modal) return closeModal();
+    if(act==='close') return closeModal();
+    if(act==='delete'){ events=events.filter(e=>e.id!==draft.id); save(); closeModal(); render(true); return toast('Событие удалено'); }
+    if(act==='make-link'){ const code=Math.random().toString(36).slice(2,5)+'-'+Math.random().toString(36).slice(2,6); draft.link=`https://telemost.example/${code}`; modal.querySelector('#evLink').value=draft.link; return; }
+    if(act==='swatches'){ modal.querySelector('#swatches').classList.toggle('hidden'); return; }
+    const sw=t.closest('[data-swatch]'); if(sw){ draft.color=sw.dataset.swatch||null; syncModal(); modal.querySelector('#swatches').classList.add('hidden'); return; }
+    if(act==='add-reminder'){ readReminders(); draft.reminders.push({ch:'Пуш',off:10}); renderReminders(); return; }
+    if(act==='rm-reminder'){ readReminders(); draft.reminders.splice(+t.closest('[data-i]').dataset.i,1); renderReminders(); return; }
+    if(act==='busy'){ busyCheck(); return; }
+    if(!t.closest('.swatches,#colorChip')) modal.querySelector('#swatches').classList.add('hidden');
+    return;
+  }
+  if(!t.closest('#viewMenu,#viewBtn,#bellPop,[data-act="bell"]')) closePopovers();
+  if(act==='create'){ toggleSidebar(false); return openModal(state.view==='month'?{date:key(mode()==='mobile'?state.sel:sameDay(state.cursor,TODAY)?TODAY:state.cursor)}:{date:key(state.view==='day'||state.view==='three'?state.cursor:TODAY)}); }
+  if(act==='toggle-side'){ const on=!$('#app').classList.contains('collapsed'); setCollapsed(on); return; }
+  if(act==='prev') return shift(-1);
+  if(act==='next') return shift(1);
+  if(act==='today'){ return goto(TODAY); }
+  if(act==='view-menu'){ $('#viewMenu').classList.toggle('hidden'); return; }
+  if(act==='bell') return bell();
+  if(act==='mini-prev'||act==='mini-next'){ state.mini=new Date(state.mini.getFullYear(),state.mini.getMonth()+(act==='mini-next'?1:-1),1); return renderMini(); }
+  if(act==='scrim') return toggleSidebar(false);
+  const v=t.closest('[data-view]'); if(v){ state.view=v.dataset.view; closePopovers(); if(state.view==='month') state.sel=new Date(state.cursor); return render(); }
+  const evb=t.closest('[data-ev]'); if(evb){ ev.stopPropagation(); if(viewCtx&&view&&viewCtx.anchor===evb) return closeView(); return openView(evb.dataset.ev,evb.dataset.date,evb); }
+  const gd=t.closest('[data-goto-day]'); if(gd) return goto(parseKey(gd.dataset.gotoDay),'day');
+  const mini=t.closest('[data-mini]'); if(mini){ toggleSidebar(false); return goto(parseKey(mini.dataset.mini)); }
+  const pick=t.closest('[data-pick]'); if(pick){ const d=parseKey(pick.dataset.pick); state.sel=d; if(d.getMonth()!==state.cursor.getMonth()) state.cursor=new Date(d.getFullYear(),d.getMonth(),1); return render(); }
+  const strip=t.closest('[data-strip]'); if(strip) return goto(parseKey(strip.dataset.strip));
+  const cell=t.closest('[data-cell]'); if(cell) return goto(parseKey(cell.dataset.cell),'day');
+  const col=t.closest('[data-col]');
+  if(col){ const r=col.getBoundingClientRect(); const min=Math.floor((ev.clientY-r.top)/0.8/30)*30; return openModal({date:col.dataset.col,start:Math.min(min,23*60)}); }
+});
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'){ if(modal) closeModal(); else if(view) closeView(); else { closePopovers(); toggleSidebar(false); } }
+  if(ev.key==='Enter'&&ev.target.dataset?.cell){ goto(parseKey(ev.target.dataset.cell),'day'); }
+});
+$('#menuBtn').addEventListener('click',ev=>{ev.stopPropagation();toggleSidebar(true)});
+$('#search').addEventListener('input',e=>{state.q=e.target.value.trim().toLowerCase(); render(true)});
+document.querySelectorAll('[data-cal]').forEach(cb=>cb.addEventListener('change',()=>{ cb.checked?state.hidden.delete(cb.dataset.cal):state.hidden.add(cb.dataset.cal); render(true); }));
+$('#peopleInput').addEventListener('keydown',e=>{
+  if(e.key!=='Enter'||!e.target.value.trim()) return;
+  state.shared.push(e.target.value.trim()); e.target.value='';
+  $('#sharedList').innerHTML=state.shared.map((n,i)=>`<label class="cal-item"><input type="checkbox" class="cb" id="sh-${i}" checked><span class="dot" style="background:${SWATCHES[(i+1)%SWATCHES.length]}"></span>${esc(n)}</label>`).join('');
+  toast('Календарь добавлен в «Общие»');
+});
+document.addEventListener('scroll',()=>{ if(view&&view.classList.contains('vpop')) closeView(); },true);
+addEventListener('hashchange',()=>{ const v=Object.keys(HASH).find(k=>HASH[k]===location.hash.slice(1)); if(v&&v!==state.view){ state.view=v; render(); } });
+let lastMode=mode(); addEventListener('resize',()=>{ placeView(); const m=mode(); if(m!==lastMode){ lastMode=m; if(m!=='tablet') toggleSidebar(false); render(true); } });
+
+// start
+try{ if(localStorage.getItem('calendar-proto-collapsed')==='1') setCollapsed(true) }catch(e){}
+document.querySelectorAll('.logo-day').forEach(t=>{ const n=String(TODAY.getDate()); t.textContent=n; t.setAttribute('font-size',n.length>1?'13':'15'); });
+const fromHash=Object.keys(HASH).find(k=>HASH[k]===location.hash.slice(1)); if(fromHash) state.view=fromHash;
+render();
+})();
+</script>
+</body>
+</html>
